@@ -8,18 +8,18 @@ const jwt = require("jsonwebtoken");
 
 export class UserService implements IUserService {
     async CreateUser(resource: IUser): Promise<string> {
-        const sql = `INSERT INTO "Users" (username, password, email, status, twitch_info, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING event_id`;
+        const sql = `INSERT INTO "Users" (username, password) VALUES ($1, $2) RETURNING user_id`;
 
         const salt = bcrypt.genSaltSync(saltRounds);
         const bcryptHash = await bcrypt.hashSync(resource.password, salt);
 
         const { rows } = await query(sql, [
             resource.username.toLocaleLowerCase(),
-            (resource.password = bcryptHash),
-            resource.email,
-            resource.status,
-            resource.twitch_info,
-            resource.user_id,
+            bcryptHash,
+            // resource.email,
+            // resource.status,
+            // resource.twitch_info,
+            // resource.user_id,
         ]);
 
         return rows[0].user_id;
@@ -38,8 +38,10 @@ export class UserService implements IUserService {
 
         const { rows } = await query(sql, [
             id,
+            resource.username,
             resource.password,
             resource.email,
+            resource.phone,
             resource.status,
             resource.twitch_info,
         ]);
@@ -64,13 +66,11 @@ export class UserService implements IUserService {
             username.toLocaleLowerCase()
         );
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            new Error("username or password does not match");
+            throw new Error("username or password does not match");
         }
-
         if (!process.env.SECRET) {
-            new Error("Server error. contact administrator")
+            throw new Error("Server error. contact administrator");
         }
-
-        return jwt.sign(user, process.env.SECRET);
+        return jwt.sign(user.user_id, process.env.SECRET);
     }
 }

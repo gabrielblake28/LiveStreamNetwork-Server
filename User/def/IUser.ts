@@ -1,5 +1,5 @@
 export interface IUser {
-    user_id: number;  // user_id is a string on IEvent   
+    user_id: number;
     created_date: Date;
     username: string;
     password: string;
