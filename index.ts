@@ -34,35 +34,6 @@ app.use(passport.initialize());
 app.use(express.json());
 app.use(cors());
 
-// const getCode = (url: string, callback: any) => {
-//     const options = {
-//         url: "https://id.twitch.tv/oauth2/token",
-//         json: true,
-//         body: {
-//             Client_ID: Client_ID,
-//             Client_Secret: Client_Secret,
-//             code: "w0jmu103l7r97eermc4e0vzmx1wpli",
-//             grant_type: "client_credentials",
-//             redirect_uri: Callback_URL,
-//         },
-//     };
-//     request.post(options, (err: any, res: any, body: any) => {
-//         if (err) {
-//             return console.log(err);
-//         }
-//         console.log(`Status : ${res.statusCode}`);
-//         console.log(body);
-
-//         callback(res);
-//     });
-// };
-
-// let AT = "";
-// getCode("https://id.twitch.tv/oauth2/token", (res: any) => {
-//     AT = res.body.access_token;
-//     return AT;
-// });
-
 app.get(
     "/auth/twitch",
     passport.authenticate("", { scope: "user:read:email" })
@@ -98,8 +69,8 @@ const getTokens = (accessToken: string, callback: any) => {
         callback(res);
 
         setTimeout(() => {
-            console.log(AT);
-            console.log(RFT);
+            // console.log(AT);
+            // console.log(RFT);
         }, 2000);
     });
 };
