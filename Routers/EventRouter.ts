@@ -3,7 +3,7 @@ import { IEventService } from "../Event/def/IEventService";
 import { EventService } from "../Event/impl/EventService";
 
 const eventService: IEventService = new EventService();
-const EventRouter = Router();
+export const EventRouter = Router();
 
 EventRouter.get("/", async (req: Request, res: Response) => {
     const result = await eventService.GetUpcomingEvents(
@@ -30,8 +30,8 @@ EventRouter.post("/", async (req: Request, res: Response) => {
 
 EventRouter.get("/live", async (req: Request, res: Response) => {
     const result = await eventService.GetLiveEvents(
-        req.body.limit,
-        req.body.page
+        parseInt(req.query.limit as string),
+        parseInt(req.query.page as string)
     );
 
     if (result) {
@@ -43,8 +43,8 @@ EventRouter.get("/live", async (req: Request, res: Response) => {
 
 EventRouter.get("/featured", async (req: Request, res: Response) => {
     const result = await eventService.GetFeaturedEvents(
-        req.body.limit,
-        req.body.page
+        parseInt(req.query.limit as string),
+        parseInt(req.query.page as string)
     );
 
     if (result) {
@@ -67,4 +67,10 @@ EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
     next();
 });
 
-EventRouter.get("");
+EventRouter.get("/:event_id", async (req: Request, res: Response) => {
+    const result = await eventService.GetEvent(
+        req.body.event_id
+    )
+    return res.status(200).send(result);
+    
+});

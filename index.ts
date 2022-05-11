@@ -3,6 +3,7 @@ import express, { response } from "express";
 import * as http from "http";
 import axios from "axios";
 import { UserRouter } from "./Routers/UserRouter";
+import { EventRouter } from "./Routers/EventRouter";
 import passport from "passport";
 const request = require("request");
 const session = require("express-session");
@@ -103,3 +104,4 @@ setTimeout(() => {
 }, 4000);
 
 app.use("/user", UserRouter);
+app.use("/event", EventRouter);

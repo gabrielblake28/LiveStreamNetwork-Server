@@ -25,6 +25,30 @@ export interface IEventService {
     ): Promise<IEvent[]>;
 
     /**
+     * Get trending events at a specified limit and page
+     * @param limit the amount of data to return
+     * @param page where in the dataset to start
+     * @param date specified "start" date where events are filtered on, defaults to current datetime
+     */
+     GetTrendingEvents(
+        limit: number,
+        page: number,
+        date?: Date
+    ): Promise<IEvent[]>;
+
+    /**
+     * Get sponsored events at a specified limit and page
+     * @param limit the amount of data to return
+     * @param page where in the dataset to start
+     * @param date specified "start" date where events are filtered on, defaults to current datetime
+     */
+     GetSponsoredEvents(
+        limit: number,
+        page: number,
+        date?: Date
+    ): Promise<IEvent[]>;
+
+    /**
      * Get all matching events from a list of user_ids
      * @param limit the amount of data to return
      * @param page where in the dataset to start
