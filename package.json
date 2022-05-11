@@ -4,7 +4,7 @@
     "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon --watch ./ --ext ts --exec ts-node --ignore '*.spec.ts' --delay 1 index.ts --unhandled-rejections=strict ./dist/index.js",
+        "start": "env-cmd -e development nodemon --watch ./ --ext ts --exec ts-node --ignore '*.spec.ts' --delay 1 index.ts --unhandled-rejections=strict ./dist/index.js",
         "build": "tsc",
         "test-w": "env-cmd -e test mocha --watch",
         "deploy": "git push heroku main"
@@ -23,7 +23,9 @@
         "body-parser": "^1.19.1",
         "cors": "^2.8.5",
         "express": "^4.17.2",
+        "firebase": "^9.6.11",
         "pg": "^8.7.3",
+        "twilio": "^3.76.1",
         "typescript": "^4.5.5"
     },
     "devDependencies": {

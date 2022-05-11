@@ -1,3 +1,4 @@
+import { Helpers } from "../../common/Helpers";
 import { query } from "../../common/PostgresQuery";
 import { IEvent } from "../def/IEvent";
 import { IEventService } from "../def/IEventService";
@@ -32,7 +33,7 @@ export class EventService implements IEventService {
         page: number,
         userIds: string[]
     ): Promise<IEvent[]> {
-        const sql = `SELECT * FROM "Events" WHERE user_id in(${this.formatStringFromArray(
+        const sql = `SELECT * FROM "Events" WHERE user_id in(${Helpers.formatStringFromArray(
             userIds
         )}) LIMIT $1 OFFSET $2`;
 
@@ -69,18 +70,6 @@ export class EventService implements IEventService {
         ]);
 
         return rows;
-    }
-
-    private formatStringFromArray(
-        arr: string[] | number[] | boolean[]
-    ): string {
-        let value = "";
-
-        arr.map((element, index) => {
-            value += `${element}${index != arr.length - 1 ? "," : ""}`;
-        });
-
-        return value;
     }
 
     async CreateEvent(resource: IEvent): Promise<string> {
