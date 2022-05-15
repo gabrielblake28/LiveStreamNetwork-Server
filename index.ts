@@ -5,6 +5,7 @@ import axios from "axios";
 import { UserRouter } from "./Routers/UserRouter";
 import { EventRouter } from "./Routers/EventRouter";
 import passport from "passport";
+import { uploadFile } from "./AWS_Upload/ImageUpload";
 const request = require("request");
 const session = require("express-session");
 const cookieSession = require("cookie-session");
@@ -27,6 +28,11 @@ let RFT = "";
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+uploadFile(
+    "testAsmon.jpg",
+    "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\asmon.jpg"
+);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
