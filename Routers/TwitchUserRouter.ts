@@ -14,3 +14,15 @@ TwitchUserRouter.post("/", async (req: Request, res: Response) => {
         res.status(400).send("ERROR");
     }
 });
+
+TwitchUserRouter.get("/twitch", async (req, res) => {
+    const result = await twitchUserService.GetUserByTwitchId(
+        req.query?.twitch_id as string
+    );
+
+    if (result) {
+        res.status(200).send(result);
+    } else {
+        res.status(400).send("ERROR");
+    }
+});

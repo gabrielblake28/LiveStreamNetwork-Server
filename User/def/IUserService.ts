@@ -13,7 +13,7 @@ export interface IUserService {
      * @param resource user data
      * @returns user_id
      */
-    CreateUser(resource: IUser): Promise<string>;
+    CreateUser(resource: IUser): Promise<IUser>;
 
     /**
      * Update a user by a given id
@@ -40,4 +40,10 @@ export interface IUserService {
      * @param username user username
      */
     GetUserByUsername(username: string): Promise<IUser>;
+
+    /**
+     * Get or create a user
+     * @param resource twitch_data
+     */
+    GetOrCreateUser(resource: IUser): Promise<IUser>;
 }

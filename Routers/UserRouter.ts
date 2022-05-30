@@ -6,7 +6,7 @@ const userService: IUserService = new UserService();
 export const UserRouter = Router();
 
 UserRouter.post("/", async (req: Request, res: Response) => {
-    const result = await userService.CreateUser(req.body);
+    const result = await userService.GetOrCreateUser(req.body);
 
     if (result) {
         res.status(200).send(result);
@@ -15,18 +15,18 @@ UserRouter.post("/", async (req: Request, res: Response) => {
     }
 });
 
-UserRouter.post("/auth", async (req: Request, res: Response) => {
-    const result: any = await userService.AuthenticateUser(
-        req.body.username,
-        req.body.password
-    );
+// UserRouter.post("/auth", async (req: Request, res: Response) => {
+//     const result: any = await userService.AuthenticateUser(
+//         req.body.username,
+//         req.body.password
+//     );
 
-    if (result) {
-        res.status(200).send(result);
-    } else {
-        res.status(200).send("ERROR");
-    }
-});
+//     if (result) {
+//         res.status(200).send(result);
+//     } else {
+//         res.status(200).send("ERROR");
+//     }
+// });
 
 UserRouter.get("/", async (req: Request, res: Response) => {
     const result = await userService.GetUser(req.body.user_id);

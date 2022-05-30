@@ -7,8 +7,8 @@ const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 
 export class UserService implements IUserService {
-    async CreateUser(resource: IUser): Promise<string> {
-        const sql = `INSERT INTO "Users" (username, password) VALUES ($1, $2) RETURNING user_id`;
+    async CreateUser(resource: IUser): Promise<IUser> {
+        const sql = `INSERT INTO "Users" (username, password) VALUES ($1, $2) RETURNING *`;
 
         const salt = bcrypt.genSaltSync(saltRounds);
         const bcryptHash = await bcrypt.hashSync(resource.password, salt);
@@ -72,5 +72,15 @@ export class UserService implements IUserService {
             throw new Error("Server error. contact administrator");
         }
         return jwt.sign(user.user_id, process.env.SECRET);
+    }
+
+    async GetOrCreateUser(resource: IUser): Promise<IUser> {
+        const sql = `SELECT * FROM "Users" WHERE twitch_id = $1`;
+        const { rows } = await query(sql, [resource.twitch_id]);
+
+        if (!rows[0]) {
+            return await this.CreateUser(resource);
+        }
+        return rows[0];
     }
 }

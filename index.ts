@@ -1,113 +1,54 @@
 import cors from "cors";
-import express, { response } from "express";
+import express from "express";
 import * as http from "http";
 import axios from "axios";
 import { UserRouter } from "./Routers/UserRouter";
 import { EventRouter } from "./Routers/EventRouter";
 import passport from "passport";
 import { uploadFile } from "./AWS_Upload/ImageUpload";
-const request = require("request");
-const session = require("express-session");
+import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
-// const passport       = require("passport");
-// const twitchStrategy = require("passport-twitch-new").Strategy;
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
 const PORT = process.env.PORT || 3500;
 
-const Client_ID = "cyg0w4xnvmd6qc81l3q6i31zsppy40";
-const Client_Secret = "246hkyxoq3i0oxb4eqez5l0fg3kfib";
-const Session_Secret = "testsecret";
-const Callback_URL = "http://localhost:3500/auth/twitch/callback";
-let Code = "";
-let AT = "";
-let RFT = "";
-
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-uploadFile(
-    "testAsmon.jpg",
-    "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\asmon.jpg"
-);
+// uploadFile(
+//     "testAsmon.jpg",
+//     "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\asmon.jpg"
+// );
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cookieSession({ secret: "secretToken" }));
 app.use(passport.initialize());
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors());
 
-app.get(
-    "/auth/twitch",
-    passport.authenticate("", { scope: "user:read:email" })
-);
+app.get("/auth/twitch/callback", async (req, res) => {
+    const tokens = await getTokens((req.query?.code as string) || "");
 
-// Set route for OAuth redirect
-app.get("/auth/twitch/callback", (req, res) => {
-    Code = String(req.query.code);
-    console.log(Code);
+    res.cookie("evently_access_token", tokens.data.access_token)
+        .cookie("evently_refresh_token", tokens.data.refresh_token)
+        .redirect("http://localhost:3000");
+    console.log(tokens.data.access_token);
 });
 
-const getTokens = (accessToken: string, callback: any) => {
-    const options = {
-        url: "https://id.twitch.tv/oauth2/token",
-        json: true,
-        body: {
-            Client_ID: Client_ID,
-            Client_Secret: Client_Secret,
-            code: accessToken,
-            grant_type: "authorization_code",
-            redirect_uri: "http://localhost:3500/auth/twitch/callback",
-        },
-    };
-    request.post(options, (err: any, res: any, body: any) => {
-        if (err) {
-            return console.log(err);
-        }
-        console.log(`Status : ${res.statusCode}`);
-        console.log(body);
-        AT = res.body.access_token;
-        RFT = res.body.refresh_token;
-
-        callback(res);
-
-        setTimeout(() => {
-            // console.log(AT);
-            // console.log(RFT);
-        }, 2000);
+const getTokens = async (accessToken: string) => {
+    return await axios.post("https://id.twitch.tv/oauth2/token", {
+        Client_ID: process.env.TWITCH_CLIENT_ID,
+        Client_Secret: process.env.TWITCH_SECRET,
+        code: accessToken,
+        grant_type: "authorization_code",
+        redirect_uri: "http://localhost:3500/auth/twitch/callback",
     });
 };
 
-setTimeout(() => {
-    getTokens(Code, (response: any) => {});
-}, 2000);
-
-function getUser(url: string, accessToken: string, callback: Function) {
-    const userOptions = {
-        url: url,
-        method: "GET",
-        headers: {
-            "Client-ID": Client_ID,
-            Authorization: "Bearer " + accessToken,
-        },
-    };
-
-    request.get(userOptions, (err: any, res: any, body: any) => {
-        if (err) {
-            return console.log(err);
-        }
-        console.log(`Status: ${res.statusCode}`);
-        console.log(JSON.parse(body));
-    });
-}
-
-setTimeout(() => {
-    getUser("https://api.twitch.tv/helix/users", AT, (response: any) => {});
-}, 4000);
-
 app.use("/user", UserRouter);
 app.use("/event", EventRouter);
+
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

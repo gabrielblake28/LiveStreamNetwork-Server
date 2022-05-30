@@ -29,8 +29,12 @@ export interface ITwitchUserService {
     DeleteUser(id: string): Promise<void>;
 
     /**
-     * Get a user by a given username
-     * @param username user username
+     * Get a user by a given twitch id
+     * @param twitch_id user twitch id
      */
-    GetUserByUsername(username: string): Promise<ITwitchUser>;
+    GetUserByTwitchId(twitch_id: string): Promise<ITwitchUser>;
+
+
+
+
 }

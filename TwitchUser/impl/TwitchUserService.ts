@@ -20,7 +20,6 @@ export class TwitchUserService implements ITwitchUserService {
         return rows[0].user_id;
     }
 
-    
     async UpdateUser(id: string, resource: ITwitchUser): Promise<ITwitchUser> {
         throw new Error("Method not implemented.");
     }
@@ -30,7 +29,11 @@ export class TwitchUserService implements ITwitchUserService {
     async DeleteUser(id: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    async GetUserByUsername(username: string): Promise<ITwitchUser> {
-        throw new Error("Method not implemented.");
+    async GetUserByTwitchId(twitch_id: string): Promise<ITwitchUser> {
+        const sql = `SELECT * FROM "Users" WHERE twitch_id = $1`;
+
+        const { rows } = await query(sql, [twitch_id]);
+
+        return rows[0];
     }
 }
