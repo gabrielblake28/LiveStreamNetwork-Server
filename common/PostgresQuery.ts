@@ -1,4 +1,8 @@
-import { Pool, PoolConfig } from "pg";
+import pg, { Pool, PoolConfig } from "pg";
+
+pg.types.setTypeParser(1114, function (stringValue) {
+    return new Date(Date.parse(stringValue + "+0000"));
+});
 
 let config: PoolConfig = {
     host: process.env.DB_HOST,
