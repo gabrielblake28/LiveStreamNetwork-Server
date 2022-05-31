@@ -2,24 +2,27 @@ import { query } from "../../common/PostgresQuery";
 import { IUser } from "../def/IUser";
 import { IUserService } from "../def/IUserService";
 import bcrypt from "bcrypt";
+import { ITwitchUserData } from "../def/ITwitchUserData";
 
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 
 export class UserService implements IUserService {
     async CreateUser(resource: IUser): Promise<IUser> {
-        const sql = `INSERT INTO "Users" (username, password) VALUES ($1, $2) RETURNING *`;
-
-        const salt = bcrypt.genSaltSync(saltRounds);
-        const bcryptHash = await bcrypt.hashSync(resource.password, salt);
+        const sql = `INSERT INTO "Users" (twitch_id, display_name, description, profile_image_url, view_count, email, phone, created_at, offline_image_url, broadcaster_type, type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
 
         const { rows } = await query(sql, [
-            resource.username.toLocaleLowerCase(),
-            bcryptHash,
-            // resource.email,
-            // resource.status,
-            // resource.twitch_info,
-            // resource.user_id,
+            resource.twitch_id,
+            resource.display_name,
+            resource.description,
+            resource.profile_image_url,
+            resource.view_count,
+            resource.email,
+            resource.phone,
+            resource.created_at,
+            resource.offline_image_url,
+            resource.broadcaster_type,
+            resource.type,
         ]);
 
         return rows[0].user_id;
@@ -38,12 +41,11 @@ export class UserService implements IUserService {
 
         const { rows } = await query(sql, [
             id,
-            resource.username,
-            resource.password,
+            resource.display_name,
+            resource.description,
+            resource.profile_image_url,
             resource.email,
             resource.phone,
-            resource.status,
-            resource.twitch_info,
         ]);
 
         return rows[0];
@@ -61,25 +63,24 @@ export class UserService implements IUserService {
         return rows;
     }
 
-    async AuthenticateUser(username: string, password: string): Promise<IUser> {
-        const user: IUser = await this.GetUserByUsername(
-            username.toLocaleLowerCase()
-        );
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            throw new Error("username or password does not match");
-        }
-        if (!process.env.SECRET) {
-            throw new Error("Server error. contact administrator");
-        }
-        return jwt.sign(user.user_id, process.env.SECRET);
-    }
-
-    async GetOrCreateUser(resource: IUser): Promise<IUser> {
+    async GetOrCreateUser(resource: ITwitchUserData): Promise<IUser> {
         const sql = `SELECT * FROM "Users" WHERE twitch_id = $1`;
-        const { rows } = await query(sql, [resource.twitch_id]);
+        const { rows } = await query(sql, [resource.id]);
 
         if (!rows[0]) {
-            return await this.CreateUser(resource);
+            return await this.CreateUser({
+                twitch_id: resource.id,
+                display_name: resource.display_name,
+                description: resource.description,
+                profile_image_url: resource.profile_image_url,
+                view_count: resource.view_count,
+                email: resource.email,
+                created_at: resource.created_at,
+                offline_image_url: resource.offline_image_url,
+                broadcaster_type: resource.broadcaster_type,
+                type: resource.type,
+                login: resource.login,
+            });
         }
         return rows[0];
     }

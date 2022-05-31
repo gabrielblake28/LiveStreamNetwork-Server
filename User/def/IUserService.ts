@@ -1,12 +1,13 @@
+import { ITwitchUserData } from "./ITwitchUserData";
 import { IUser } from "./IUser";
 
 export interface IUserService {
-    /**
-     * Authenticate the credentials of a user
-     * @param username
-     * @param password
-     */
-    AuthenticateUser(username: string, password: string): Promise<IUser>;
+    // /**
+    //  * Authenticate the credentials of a user
+    //  * @param username
+    //  * @param password
+    //  */
+    // AuthenticateUser(username: string, password: string): Promise<IUser>;
 
     /**
      * Create a user with given resource
@@ -45,5 +46,5 @@ export interface IUserService {
      * Get or create a user
      * @param resource twitch_data
      */
-    GetOrCreateUser(resource: IUser): Promise<IUser>;
+    GetOrCreateUser(resource: ITwitchUserData): Promise<IUser>;
 }

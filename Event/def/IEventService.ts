@@ -30,7 +30,7 @@ export interface IEventService {
      * @param page where in the dataset to start
      * @param date specified "start" date where events are filtered on, defaults to current datetime
      */
-     GetTrendingEvents(
+    GetTrendingEvents(
         limit: number,
         page: number,
         date?: Date
@@ -42,7 +42,7 @@ export interface IEventService {
      * @param page where in the dataset to start
      * @param date specified "start" date where events are filtered on, defaults to current datetime
      */
-     GetSponsoredEvents(
+    GetSponsoredEvents(
         limit: number,
         page: number,
         date?: Date
