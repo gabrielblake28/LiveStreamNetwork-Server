@@ -11,7 +11,7 @@ export class EventService implements IEventService {
     ): Promise<IEvent[]> {
         const sql = `SELECT * FROM "Events" WHERE start_timestamp <= $1 and end_timestamp >= $1 LIMIT $2 OFFSET $3`;
 
-        const { rows } = await query(sql, [date, limit, page * limit]);
+        const { rows } = await query(sql, [date, limit, (page - 1) * limit]);
 
         return rows;
     }
@@ -22,6 +22,30 @@ export class EventService implements IEventService {
         date: Date = new Date()
     ): Promise<IEvent[]> {
         const sql = `SELECT * FROM "Events" WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+
+        const { rows } = await query(sql, [date, limit, (page - 1) * limit]);
+
+        return rows;
+    }
+
+    async GetTrendingEvents(
+        limit: number,
+        page: number,
+        date: Date = new Date()
+    ): Promise<IEvent[]> {
+        const sql = `SELECT * FROM "Events" WHERE trending = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+
+        const { rows } = await query(sql, [date, limit, page * limit]);
+
+        return rows;
+    }
+
+    async GetSponsoredEvents(
+        limit: number,
+        page: number,
+        date: Date = new Date()
+    ): Promise<IEvent[]> {
+        const sql = `SELECT * FROM "Events" WHERE sponsored = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
 
         const { rows } = await query(sql, [date, limit, page * limit]);
 
