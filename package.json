@@ -31,6 +31,9 @@
         "cors": "^2.8.5",
         "env-cmd": "^10.1.0",
         "express": "^4.17.2",
+        "firebase": "^9.6.11",
+        "pg": "^8.7.3",
+        "twilio": "^3.76.1",
         "express-session": "^1.17.2",
         "jsonwebtoken": "^8.5.1",
         "passport": "^0.5.2",
@@ -38,7 +41,6 @@
         "passport-oauth2": "^1.6.1",
         "passport-twitch": "^1.0.3",
         "passport-twitch-new": "^0.0.2",
-        "pg": "^8.7.3",
         "request": "^2.88.2",
         "session": "^0.1.0",
         "typescript": "^4.5.5"

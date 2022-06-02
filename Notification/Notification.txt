@@ -1,0 +1,28 @@
+
+Requirements:
+    Every 15 minutes find all events happening in the next 30 minutes
+    Query all subscriptions for each event
+    Send message to all people
+    Check if Event ends at this time
+    Remove all active subscriptions
+
+
+INotificationService
+
+    GetEndedEvents(timestamp: Timestamp);
+
+    GetActiveEvents(timestamp: Timestamp);
+
+    BatchGetSubscriptions(events: Event[]);
+
+    BatchSendNotification(Subscriptions: ISubscription[]);
+
+    BatchClearSubscriptions(events: Event[]);
+
+
+INotification() {
+     
+    Send();
+}
+
+
