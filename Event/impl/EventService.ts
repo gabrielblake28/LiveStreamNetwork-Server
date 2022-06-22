@@ -7,11 +7,17 @@ export class EventService implements IEventService {
     async GetLiveEvents(
         limit: number,
         page: number,
+        user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT * FROM "Events" WHERE start_timestamp <= $1 and end_timestamp >= $1 LIMIT $2 OFFSET $3`;
+        const sql = `SELECT *, CASE WHEN EXISTS (SELECT user_id FROM "Subscriptions" WHERE user_id = $1 AND event_id = e.event_id) THEN true else false END as is_subscribed FROM "Events" e WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
 
-        const { rows } = await query(sql, [date, limit, (page - 1) * limit]);
+        const { rows } = await query(sql, [
+            user_id,
+            date,
+            limit,
+            (page - 1) * limit,
+        ]);
 
         return rows;
     }
@@ -19,11 +25,17 @@ export class EventService implements IEventService {
     async GetFeaturedEvents(
         limit: number,
         page: number,
+        user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT * FROM "Events" WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+        const sql = `SELECT e.*, u.subscription_id FROM "Events" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
 
-        const { rows } = await query(sql, [date, limit, (page - 1) * limit]);
+        const { rows } = await query(sql, [
+            date,
+            limit,
+            (page - 1) * limit,
+            user_id,
+        ]);
 
         return rows;
     }
@@ -31,6 +43,7 @@ export class EventService implements IEventService {
     async GetTrendingEvents(
         limit: number,
         page: number,
+        user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
         const sql = `SELECT * FROM "Events" WHERE trending = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
@@ -43,6 +56,7 @@ export class EventService implements IEventService {
     async GetSponsoredEvents(
         limit: number,
         page: number,
+        user_id: string = "",
         date: Date = new Date()
     ): Promise<IEvent[]> {
         const sql = `SELECT * FROM "Events" WHERE sponsored = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
