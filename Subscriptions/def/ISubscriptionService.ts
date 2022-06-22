@@ -1,3 +1,4 @@
+import { ResponsePayload } from "../../common/message/MessageService";
 import { IEvent } from "../../Event/def/IEvent";
 import { ISubscription } from "./ISubscription";
 
@@ -6,9 +7,20 @@ export interface ISubscriptionService {
 
     BatchClearSubscriptions(eventIds: string[]): void;
 
-    addSubscription(resource: ISubscription): Promise<string>;
+    AddSubscription(
+        resource: Partial<ISubscription>
+    ): Promise<ResponsePayload<string>>;
 
-    removeSubscription(subscription_id: string): Promise<void>;
+    RemoveSubscription(
+        subscription_id: string
+    ): Promise<ResponsePayload<string>>;
 
-    getSubscription(subscription_id: string): Promise<ISubscription>;
+    GetSubscription(
+        subscription_id: string
+    ): Promise<ResponsePayload<ISubscription>>;
+
+    GetSubscriptionByEvent(
+        event_id: string,
+        user_id: string
+    ): Promise<ResponsePayload<ISubscription>>;
 }

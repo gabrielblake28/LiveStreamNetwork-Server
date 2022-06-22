@@ -13,6 +13,7 @@ import { EventRouter } from "./Routers/EventRouter";
 import passport from "passport";
 import { uploadFile } from "./AWS_Upload/ImageUpload";
 import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
+import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -95,6 +96,7 @@ const getTokens = async (accessToken: string) => {
 
 app.use("/user", UserRouter);
 app.use("/event", EventRouter);
+app.use("/subscription", SubscriptionRouter);
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
