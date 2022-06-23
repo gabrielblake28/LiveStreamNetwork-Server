@@ -5,8 +5,9 @@ import axios from "axios";
 import { UserRouter } from "./Routers/UserRouter";
 import { EventRouter } from "./Routers/EventRouter";
 import passport from "passport";
-import { uploadFile } from "./AWS_Upload/ImageUpload";
+// import { uploadFile } from "./ThumbnailUpload/ThumbnailUploadService";
 import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
+import { FileUploadRouter } from "./Routers/FileUploadRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 3500;
 
 // uploadFile(
 //     "testAsmon.jpg",
-//     "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\asmon.jpg"
+//     "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\ProfilePictures\\asmon.jpg"
 // );
 
 app.use(express.urlencoded({ extended: true }));
@@ -46,6 +47,7 @@ const getTokens = async (accessToken: string) => {
     });
 };
 
+app.use("/image_upload", FileUploadRouter);
 app.use("/user", UserRouter);
 app.use("/event", EventRouter);
 

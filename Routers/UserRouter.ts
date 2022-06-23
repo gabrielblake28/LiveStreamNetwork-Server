@@ -16,6 +16,10 @@ UserRouter.post("/", async (req: Request, res: Response) => {
         },
     });
 
+    if (twitchUser.data.error) {
+        res.status(400).send(twitchUser.data.error);
+    }
+
     const result = await userService.GetOrCreateUser(twitchUser.data.data[0]);
 
     if (result) {
