@@ -31,7 +31,8 @@ EventRouter.post("/", async (req: Request, res: Response) => {
 EventRouter.get("/live", async (req: Request, res: Response) => {
     const result = await eventService.GetLiveEvents(
         parseInt(req.query.limit as string),
-        parseInt(req.query.page as string)
+        parseInt(req.query.page as string),
+        req.query.user_id as string
     );
 
     if (result) {
@@ -44,7 +45,8 @@ EventRouter.get("/live", async (req: Request, res: Response) => {
 EventRouter.get("/featured", async (req: Request, res: Response) => {
     const result = await eventService.GetFeaturedEvents(
         parseInt(req.query.limit as string),
-        parseInt(req.query.page as string)
+        parseInt(req.query.page as string),
+        req.query.user_id as string
     );
 
     if (result) {
@@ -68,9 +70,6 @@ EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
 });
 
 EventRouter.get("/:event_id", async (req: Request, res: Response) => {
-    const result = await eventService.GetEvent(
-        req.body.event_id
-    )
+    const result = await eventService.GetEvent(req.body.event_id);
     return res.status(200).send(result);
-    
 });

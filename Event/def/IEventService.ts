@@ -10,7 +10,12 @@ export interface IEventService {
      * @param page where in the dataset to start
      * @param date specify date as "live date", otherwise defaults to current datetime
      */
-    GetLiveEvents(limit: number, page: number, date?: Date): Promise<IEvent[]>;
+    GetLiveEvents(
+        limit: number,
+        page: number,
+        user_id: string,
+        date?: Date
+    ): Promise<IEvent[]>;
 
     /**
      * Get featured events at a specified limit and page
@@ -21,6 +26,7 @@ export interface IEventService {
     GetFeaturedEvents(
         limit: number,
         page: number,
+        user_id: string,
         date?: Date
     ): Promise<IEvent[]>;
 
@@ -33,6 +39,7 @@ export interface IEventService {
     GetTrendingEvents(
         limit: number,
         page: number,
+        user_id: string,
         date?: Date
     ): Promise<IEvent[]>;
 
@@ -45,6 +52,7 @@ export interface IEventService {
     GetSponsoredEvents(
         limit: number,
         page: number,
+        user_id: string,
         date?: Date
     ): Promise<IEvent[]>;
 
