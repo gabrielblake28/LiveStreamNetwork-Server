@@ -15,6 +15,7 @@ import passport from "passport";
 import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
 import { FileUploadRouter } from "./Routers/FileUploadRouter";
 import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
+import { SearchRouter } from "./Routers/SearchRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -99,6 +100,7 @@ app.use("/image_upload", FileUploadRouter);
 app.use("/user", UserRouter);
 app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
+app.use("/search", SearchRouter);
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
