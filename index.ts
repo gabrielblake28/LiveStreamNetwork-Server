@@ -64,11 +64,6 @@ setInterval(() => {
     batchTextNotificationStrategy.send();
 }, 300000);
 
-// uploadFile(
-//     "testAsmon.jpg",
-//     "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\ProfilePictures\\asmon.jpg"
-// );
-
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cookieSession({ secret: "secretToken" }));
@@ -79,11 +74,13 @@ app.use(cors());
 
 app.get("/auth/twitch/callback", async (req, res) => {
     const tokens = await getTokens((req.query?.code as string) || "");
+    const categories = await getCategories();
 
     res.cookie("evently_access_token", tokens.data.access_token)
         .cookie("evently_refresh_token", tokens.data.refresh_token)
         .redirect("http://localhost:3000");
     console.log(tokens.data.access_token);
+    console.log(categories);
 });
 
 const getTokens = async (accessToken: string) => {

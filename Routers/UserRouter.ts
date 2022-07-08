@@ -29,8 +29,8 @@ UserRouter.post("/", async (req: Request, res: Response) => {
     }
 });
 
-UserRouter.get("/", async (req: Request, res: Response) => {
-    const result = await userService.GetUser(req.body.user_id);
+UserRouter.get("/:user_id", async (req: Request, res: Response) => {
+    const result = await userService.GetUser(req.params.user_id);
 
     if (result) {
         res.status(200).send(result);
