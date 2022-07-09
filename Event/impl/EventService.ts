@@ -187,4 +187,12 @@ export class EventService implements IEventService {
             return false;
         }
     }
+
+    async GetSubscribedEvents(user_id: string): Promise<Partial<IEvent>[]> {
+        const sql = `Select event_id, user_id, title, display_name, image, start_timestamp, end_timestamp from "SubscriptionsView" where user_id = $1`;
+
+        const { rows } = await query(sql, [user_id]);
+
+        return rows;
+    }
 }

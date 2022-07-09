@@ -138,4 +138,10 @@ export interface IEventService {
      * @param subscription_id
      */
     UnsubscribeToEvent(subscription_id: string): Promise<void>;
+
+    /**
+     * Gets events a user is subscribed to by the user_id
+     * @param user_id
+     */
+    GetSubscribedEvents(user_id: string): Promise<Partial<IEvent>[]>;
 }

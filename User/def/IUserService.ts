@@ -47,4 +47,10 @@ export interface IUserService {
      * @param resource twitch_data
      */
     GetOrCreateUser(resource: ITwitchUserData): Promise<IUser>;
+
+    /**
+     * Get subscriptions by user id
+     * @param resource user_id
+     */
+    // GetSubscribedEventsByUserId(user_id: string): Promise<IEvent>;
 }

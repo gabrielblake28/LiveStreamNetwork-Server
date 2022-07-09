@@ -73,3 +73,13 @@ EventRouter.get("/:event_id", async (req: Request, res: Response) => {
     const result = await eventService.GetEvent(req.body.event_id);
     return res.status(200).send(result);
 });
+
+EventRouter.get("/subscribed/:user_id", async (req: Request, res: Response) => {
+    const result = await eventService.GetSubscribedEvents(req.params.user_id);
+
+    if (result) {
+        res.status(200).send(result);
+    } else {
+        res.status(400).send("ERROR");
+    }
+});
