@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 
 export class UserService implements IUserService {
     async CreateUser(resource: IUser): Promise<IUser> {
-        const sql = `INSERT INTO "Users" (twitch_id, display_name, description, profile_image_url, view_count, email, phone, created_at, offline_image_url, broadcaster_type, type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
+        const sql = `INSERT INTO "Users" (twitch_id, display_name, description, profile_image_url, view_count, email, phone, created_at, offline_image_url, broadcaster_type, type) VALUES ($1, lower($2), $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
 
         const { rows } = await query(sql, [
             resource.twitch_id,

@@ -15,7 +15,7 @@ import passport from "passport";
 import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
 import { FileUploadRouter } from "./Routers/FileUploadRouter";
 import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
-
+import { SearchRouter } from "./Routers/SearchRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -64,11 +64,6 @@ setInterval(() => {
     batchTextNotificationStrategy.send();
 }, 300000);
 
-// uploadFile(
-//     "testAsmon.jpg",
-//     "C:\\Users\\Gabriel\\Workspace\\MainProjects\\TWEFrontend\\src\\assets\\ProfilePictures\\asmon.jpg"
-// );
-
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cookieSession({ secret: "secretToken" }));
@@ -100,6 +95,7 @@ app.use("/image_upload", FileUploadRouter);
 app.use("/user", UserRouter);
 app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
+app.use("/search", SearchRouter);
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
