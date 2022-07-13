@@ -15,8 +15,9 @@ export const EventRouter = Router();
 
 EventRouter.get("/", async (req: Request, res: Response) => {
     const result = await eventService.GetUpcomingEvents(
-        req.body.limit,
-        req.body.page
+        parseInt(req.query.limit as string),
+        parseInt(req.query.page as string),
+        req.query.user_id as string
     );
 
     if (result) {

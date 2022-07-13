@@ -76,6 +76,7 @@ export interface IEventService {
     GetUpcomingEvents(
         limit: number,
         page: number,
+        user_id: string,
         date?: Date
     ): Promise<IEvent[]>;
 
