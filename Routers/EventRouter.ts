@@ -1,8 +1,16 @@
 import { Router, Request, Response } from "express";
+import multer from "multer";
 import { IEventService } from "../Event/def/IEventService";
 import { EventService } from "../Event/impl/EventService";
+import fs from "fs";
+import awsSDK from "aws-sdk";
+import { resolveModuleName } from "typescript";
+import { v4 as uuidv4 } from "uuid";
 
 const eventService: IEventService = new EventService();
+const storage = multer.memoryStorage();
+const Upload = multer({ storage: storage });
+
 export const EventRouter = Router();
 
 EventRouter.get("/", async (req: Request, res: Response) => {
@@ -18,15 +26,36 @@ EventRouter.get("/", async (req: Request, res: Response) => {
     }
 });
 
-EventRouter.post("/", async (req: Request, res: Response) => {
-    const result = await eventService.CreateEvent(req.body);
+EventRouter.post(
+    "/",
+    Upload.single("file"),
+    async (req: Request, res: Response) => {
+        awsSDK.config.update({
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        });
+        const s3 = new awsSDK.S3();
 
-    if (result) {
-        res.status(201).send(result);
-    } else {
-        res.status(400).send("ERROR");
+        const response = await s3
+            .upload({
+                Bucket: "" + process.env.S3_BUCKET_NAME,
+                Key: uuidv4(),
+                Body: req.file?.buffer,
+                ContentType: "image/jpeg",
+            })
+            .promise();
+
+        const result = await eventService.CreateEvent(
+            Object.assign({}, req.body, { image: response.Location })
+        );
+
+        if (result) {
+            res.status(201).send(result);
+        } else {
+            res.status(400).send("ERROR");
+        }
     }
-});
+);
 
 EventRouter.get("/live", async (req: Request, res: Response) => {
     const result = await eventService.GetLiveEvents(
