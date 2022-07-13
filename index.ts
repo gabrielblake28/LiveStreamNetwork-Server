@@ -101,7 +101,7 @@ app.use("/search", SearchRouter);
 const testService = new TestService();
 
 console.time("CreateEvents");
-// testService.CreateEvents(10000);
+// testService.CreateEvents(10000, new Date("2023-08-01"), true);
 console.timeEnd("CreateEvents");
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

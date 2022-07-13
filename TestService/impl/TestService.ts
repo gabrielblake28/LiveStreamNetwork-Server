@@ -34,6 +34,7 @@ export class TestService {
                 image: `https://picsum.photos/800/450?dummyParam=${i}`,
                 start_timestamp: date,
                 end_timestamp: date,
+                user_id: "1",
                 created_for_test: true,
                 featured: true,
             });
@@ -41,7 +42,7 @@ export class TestService {
         events.forEach((event) => {
             sql += `('${event.title}', '${event.description}', '${
                 event.image
-            }', '${event.start_timestamp?.toISOString()}', '${event.end_timestamp?.toISOString()}', ${
+            }', '${event.start_timestamp?.toISOString()}', '${event.end_timestamp?.toISOString()}', ${"1"}, ${
                 event.created_for_test
             }, ${event.featured}),`;
         });
