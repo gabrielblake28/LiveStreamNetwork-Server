@@ -8,4 +8,5 @@ export interface IEvent {
     user_id: string;
     category_id: string;
     event_id?: string;
+    created_for_test: boolean;
 }

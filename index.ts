@@ -16,6 +16,7 @@ import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
 import { FileUploadRouter } from "./Routers/FileUploadRouter";
 import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
 import { SearchRouter } from "./Routers/SearchRouter";
+import { TestService } from "./TestService/impl/TestService";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -97,6 +98,11 @@ app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
 app.use("/search", SearchRouter);
 
+const testService = new TestService();
+
+console.time("CreateEvents");
+// testService.CreateEvents(10000);
+console.timeEnd("CreateEvents");
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
