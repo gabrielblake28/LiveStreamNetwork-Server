@@ -10,7 +10,7 @@ export class EventService implements IEventService {
         user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT *, CASE WHEN EXISTS (SELECT user_id FROM "Subscriptions" WHERE user_id = $1 AND event_id = e.event_id) THEN true else false END as is_subscribed FROM "Events" e WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
+        const sql = `SELECT *, CASE WHEN EXISTS (SELECT user_id FROM "Subscriptions" WHERE user_id = $1 AND event_id = e.event_id) THEN true else false END as is_subscribed FROM "EventView" e WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
 
         const { rows } = await query(sql, [
             user_id,
@@ -28,7 +28,7 @@ export class EventService implements IEventService {
         user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT e.*, u.subscription_id FROM "Events" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+        const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
 
         const { rows } = await query(sql, [
             date,
@@ -86,7 +86,7 @@ export class EventService implements IEventService {
         user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT e.*, u.subscription_id FROM "Events" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+        const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
 
         const { rows } = await query(sql, [date, limit, page * limit, user_id]);
 

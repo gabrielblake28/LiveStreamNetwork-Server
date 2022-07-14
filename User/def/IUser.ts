@@ -12,4 +12,5 @@ export interface IUser {
     offline_image_url: string;
     type: string;
     phone?: string;
+    created_for_test?: boolean;
 }
