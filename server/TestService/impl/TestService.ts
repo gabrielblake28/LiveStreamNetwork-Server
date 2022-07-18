@@ -96,11 +96,11 @@ export class TestService {
 
     async AddSubscriptions(eventsCount: number, maxSubscriptions: number) {
         if (eventsCount > 500) {
-            throw Error("Cannot subscribe to more than 10000 events at once");
+            throw Error("Cannot subscribe to more than 500 events at once");
         }
 
         if (maxSubscriptions > 1000) {
-            throw Error("Cannot add more than 5000 subscriptions at once");
+            throw Error("Cannot add more than 1000 subscriptions at once");
         }
 
         let sql = `INSERT INTO "Subscriptions"(event_id, user_id, created_date) VALUES`;
