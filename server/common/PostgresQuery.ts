@@ -1,7 +1,11 @@
 import pg, { Pool, PoolConfig } from "pg";
 
+pg.defaults.parseInputDatesAsUTC = true;
 pg.types.setTypeParser(1114, function (stringValue) {
-    return new Date(Date.parse(stringValue + "+0000"));
+    return new Date(stringValue + "+0000");
+});
+pg.types.setTypeParser(1184, function (stringValue) {
+    return new Date(stringValue + "+0000");
 });
 
 let config: PoolConfig = {

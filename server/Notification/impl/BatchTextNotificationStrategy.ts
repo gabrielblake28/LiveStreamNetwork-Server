@@ -37,7 +37,6 @@ export class BatchTextNotificationStrategy implements INotificationStrategy {
             sent_to: this.Numbers,
             sent_count: this.Numbers.length,
         });
-        console.log(response);
     }
 
     private createBindings(): string[] {

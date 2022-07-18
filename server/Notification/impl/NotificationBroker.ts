@@ -26,7 +26,7 @@ export class NotificationBroker implements INotificationBroker {
         const events = await this.EventService.GetEventsAtStartTime(
             10000,
             0,
-            this.getDateIn(date, 15 * 60 * 1000)
+            this.getDateIn(new Date(date), 15 * 60 * 1000)
         );
 
         events.forEach(async (event) => {
@@ -48,7 +48,7 @@ export class NotificationBroker implements INotificationBroker {
                 }
             });
 
-            if (emails.length <= 0) {
+            if (emails.length > 0) {
                 this.NotificationFactory.CreateNotificationWorker({
                     Kind: "email",
                     body: `Send email for ${event.event_id}`,
@@ -56,7 +56,7 @@ export class NotificationBroker implements INotificationBroker {
                 }).send();
             }
 
-            if (numbers.length <= 0) {
+            if (numbers.length > 0) {
                 this.NotificationFactory.CreateNotificationWorker({
                     Kind: "sms",
                     body: `Send text for ${event.event_id}`,
