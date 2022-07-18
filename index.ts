@@ -17,6 +17,14 @@ import { FileUploadRouter } from "./Routers/FileUploadRouter";
 import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
 import { SearchRouter } from "./Routers/SearchRouter";
 import { TestService } from "./TestService/impl/TestService";
+import { NotificationKind } from "./Notification/def/NotificationKind";
+import prompt from "prompt";
+import { NotificationRouter } from "./Routers/NotificationRouter";
+import { MailGunEmailClient } from "./Notification/impl/MailgunEmailClient";
+import { INotificationClient } from "./Notification/def/INotificationClient";
+import { NotificationBroker } from "./Notification/impl/NotificationBroker";
+import { EventService } from "./Event/impl/EventService";
+import { NotificationFactory } from "./Notification/impl/NotificationFactory";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -46,24 +54,19 @@ const cookieParser = require("cookie-parser");
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
 const PORT = process.env.PORT || 3500;
-// export const TwilioClient = new TwilioClientWrapper(
-//     process.env.TWILIO_ACCOUNT_SID || "",
-//     process.env.TWILIO_NOTIFY_SID || "",
-//     process.env.TWILIO_AUTH_TOKEN || ""
+
+// export const TwilioClient = new MockNotificationClient();
+
+// const batchTextNotificationStrategy = new BatchTextNotificationStrategy(
+//     ["+18635129916"],
+//     "Some Generic Message",
+//     TwilioClient
 // );
 
-export const TwilioClient = new MockNotificationClient();
-
-const batchTextNotificationStrategy = new BatchTextNotificationStrategy(
-    ["+18635129916"],
-    "Some Generic Message",
-    TwilioClient
-);
-
-new SubscriptionService().BatchGetSubscriptions(["289"]);
-setInterval(() => {
-    batchTextNotificationStrategy.send();
-}, 300000);
+// new SubscriptionService().BatchGetSubscriptions(["289"]);
+// setInterval(() => {
+//     batchTextNotificationStrategy.send();
+// }, 300000);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -97,22 +100,68 @@ app.use("/user", UserRouter);
 app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
 app.use("/search", SearchRouter);
+app.use("/notification", NotificationRouter);
 
 const testService = new TestService();
 
 // console.time("CreateEvents");
 // testService.DeleteEvents().then(() => {
 //     testService.DeleteUsers().then(() => {
-//         testService.CreateUsers(10000).then(() => {
-//             testService
-//                 .CreateEvents(10000, new Date("2023-08-01"), true)
-//                 .then(() => {
-//                     console.timeEnd("CreateEvents");
-//                 });
+//         testService.DeleteSubscriptions().then(() => {
+//             testService.CreateUsers(10000).then(() => {
+//                 testService
+//                     .CreateEvents(10000, new Date("2023-08-01"), true)
+//                     .then(() => {
+//                         testService.AddSubscriptions(500, 100).then(() => {
+//                             console.timeEnd("CreateEvents");
+//                         });
+//                     });
+//             });
 //         });
 //     });
 // });
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// const phone = "+18635129916";
+// TwilioClient.SendVerification(phone, "sms").then((result) => {
+//     console.log(result);
+
+//     prompt.start();
+
+//     prompt.get(["code"], function (err, result) {
+//         if (err) {
+//             console.log("Error");
+//         } else {
+//             TwilioClient.Verify(phone, result.code as string).then((res) =>
+//                 console.log(res)
+//             );
+//         }
+//     });
+// });
+// let client: INotificationClient;
+
+// if (process.env.MAILGUN_SANDBOX_KEY && process.env.MAILGUN_SANDBOX_DOMAIN) {
+//     client = new MailGunEmailClient(
+//         process.env.MAILGUN_SANDBOX_KEY,
+//         process.env.MAILGUN_SANDBOX_DOMAIN
+//     );
+//     client.send([], "");
+// } else {
+//     console.log(
+//         process.env.MAILGUN_SANDBOX_KEY,
+//         process.env.MAILGUN_SANDBOX_DOMAIN
+//     );
+// }
+
+const notificationBroker = new NotificationBroker(
+    new EventService(),
+    new SubscriptionService(),
+    new NotificationFactory()
+);
+
+setTimeout(() => {
+    notificationBroker.QueueNotification(new Date("2023-03-18T17:15:00"));
 });
+
+// server.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+// });

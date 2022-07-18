@@ -80,6 +80,8 @@ export class UserService implements IUserService {
                 broadcaster_type: resource.broadcaster_type,
                 type: resource.type,
                 login: resource.login,
+                allow_email: true,
+                allow_sms: true,
             });
         }
         return rows[0];

@@ -95,6 +95,18 @@ export interface IEventService {
     ): Promise<IEvent[]>;
 
     /**
+     * Gets all events at a specific Date and Time
+     * @param limit the amount of data to return
+     * @param page where in the dataset to start
+     * @param date specified datetime events are filtered on, defaults to current datetime
+     */
+    GetEventsAtStartTime(
+        limit: number,
+        page: number,
+        date?: Date
+    ): Promise<IEvent[]>;
+
+    /**
      * Create an event with given resource
      * @param resource event data
      * @returns event_id
@@ -119,26 +131,6 @@ export interface IEventService {
      * @param resource event data
      */
     UpdateEvent(id: string, resource: IEvent): Promise<IEvent>;
-
-    /**
-     * Gets whether a user has subcribed to an event
-     * @param user_id
-     * @param event_id
-     */
-    IsSubscribedToEvent(user_id: string, event_id: string): Promise<boolean>;
-
-    /**
-     * Subscribe a user to an event
-     * @param event_id
-     * @param user_id
-     */
-    SubscribeToEvent(user_id: string, event_id: string): Promise<string>;
-
-    /**
-     * Unsubscribe to event
-     * @param subscription_id
-     */
-    UnsubscribeToEvent(subscription_id: string): Promise<void>;
 
     /**
      * Gets events a user is subscribed to by the user_id

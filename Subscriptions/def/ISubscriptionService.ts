@@ -3,7 +3,7 @@ import { IEvent } from "../../Event/def/IEvent";
 import { ISubscription } from "./ISubscription";
 
 export interface ISubscriptionService {
-    BatchGetSubscriptions(eventIds: string[]): Promise<ISubscription[]>;
+    BatchGetSubscriptions(event_id: string): Promise<ISubscription[]>;
 
     BatchClearSubscriptions(eventIds: string[]): void;
 

@@ -4,6 +4,18 @@ import { IEvent } from "../def/IEvent";
 import { IEventService } from "../def/IEventService";
 
 export class EventService implements IEventService {
+    async GetEventsAtStartTime(
+        limit: number,
+        page: number,
+        date: Date | undefined = new Date()
+    ): Promise<IEvent[]> {
+        const sql = `SELECT event_id from "Events" WHERE start_timestamp = $1 LIMIT $2 OFFSET $3`;
+
+        const { rows } = await query(sql, [date, limit, page]);
+
+        return rows;
+    }
+
     async GetLiveEvents(
         limit: number,
         page: number,
@@ -158,35 +170,6 @@ export class EventService implements IEventService {
         ]);
 
         return rows[0];
-    }
-
-    async SubscribeToEvent(user_id: string, event_id: string): Promise<string> {
-        const sql = `INSERT INTO "Subscriptions" (user_id, event_id) VALUES ($1, $2) RETURNING subscription_id`;
-
-        const { rows } = await query(sql, [user_id, event_id]);
-
-        return rows[0].subscription_id;
-    }
-
-    async UnsubscribeToEvent(subscription_id: string): Promise<void> {
-        const sql = `DELETE FROM "Subscriptions" WHERE subscription_id = $1`;
-
-        await query(sql, [subscription_id]);
-    }
-
-    async IsSubscribedToEvent(
-        user_id: string,
-        event_id: string
-    ): Promise<boolean> {
-        const sql = `SELECT * FROM "Subscriptions" WHERE user_id = $1 AND event_id = $2`;
-
-        const { rows } = await query(sql, [user_id, event_id]);
-
-        if (rows[0]) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     async GetSubscribedEvents(user_id: string): Promise<Partial<IEvent>[]> {
