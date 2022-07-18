@@ -13,4 +13,6 @@ export interface IUser {
     type: string;
     phone?: string;
     created_for_test?: boolean;
+    allow_email: boolean;
+    allow_sms: boolean;
 }

@@ -81,12 +81,12 @@ export class SubscriptionService implements ISubscriptionService {
         }
     }
 
-    async BatchGetSubscriptions(eventIds: string[]): Promise<ISubscription[]> {
-        const sql = `SELECT * FROM "SubscriptionsView" WHERE event_id in(${Helpers.formatStringFromArray(
-            eventIds
-        )})`;
+    async BatchGetSubscriptions(event_id: string): Promise<ISubscription[]> {
+        const sql = `SELECT * FROM "SubscriptionsView" WHERE event_id = $1`;
 
-        const { rows }: { rows: ISubscription[] } = await query(sql, []);
+        const { rows }: { rows: ISubscription[] } = await query(sql, [
+            event_id,
+        ]);
 
         return rows;
     }

@@ -5,6 +5,7 @@ import { query } from "../../common/PostgresQuery";
 import { TriggerContext } from "twilio/lib/rest/api/v2010/account/usage/trigger";
 import { IUser } from "../../User/def/IUser";
 import { UserSearchProvider } from "../../Search/impl/UserSearchProvider";
+import { ISubscription } from "../../Subscriptions/def/ISubscription";
 
 export class TestService {
     constructor() {}
@@ -62,7 +63,7 @@ export class TestService {
 
         const users: Partial<IUser>[] = [];
 
-        let sql = `INSERT INTO "Users"(display_name, twitch_id, profile_image_url, email, offline_image_url, created_for_test) VALUES`;
+        let sql = `INSERT INTO "Users"(display_name, twitch_id, profile_image_url, email, offline_image_url, created_for_test, allow_email, allow_sms, phone) VALUES`;
 
         const userName = UserNames.slice(0, count);
 
@@ -76,11 +77,14 @@ export class TestService {
                 email: `twefrontendtestemail@gmail.com`,
                 offline_image_url: `https://robohash.org/${i}.png`,
                 created_for_test: true,
+                phone: "+8635129916",
+                allow_email: true,
+                allow_sms: true,
             });
         }
 
         users.forEach((user) => {
-            sql += `('${user.display_name}', '${user.twitch_id}', '${user.profile_image_url}', '${user.email}', '${user.offline_image_url}', '${user.created_for_test}'),`;
+            sql += `('${user.display_name}', '${user.twitch_id}', '${user.profile_image_url}', '${user.email}', '${user.offline_image_url}', '${user.created_for_test}', '${user.allow_email}', '${user.allow_sms}', '${user.phone}'),`;
         });
 
         await query(sql.slice(0, sql.length - 1), []);
@@ -90,8 +94,46 @@ export class TestService {
         await query(`DELETE FROM "Users" WHERE created_for_test=true`, []);
     }
 
-    AddSubscriptions() {}
-    DeleteSubscriptions() {}
+    async AddSubscriptions(eventsCount: number, maxSubscriptions: number) {
+        if (eventsCount > 500) {
+            throw Error("Cannot subscribe to more than 10000 events at once");
+        }
+
+        if (maxSubscriptions > 1000) {
+            throw Error("Cannot add more than 5000 subscriptions at once");
+        }
+
+        let sql = `INSERT INTO "Subscriptions"(event_id, user_id, created_date) VALUES`;
+
+        const subscriptions: Partial<ISubscription>[] = [];
+        const events = await this.GetEvents(eventsCount);
+        const users = await this.GetUsers(maxSubscriptions);
+
+        events.forEach((event) => {
+            const subsToAdd = Math.random() * maxSubscriptions;
+            for (let i = 0; i < subsToAdd; i++) {
+                subscriptions.push({
+                    event_id: event.event_id,
+                    user_id: users[i].user_id,
+                });
+            }
+        });
+
+        subscriptions.forEach((subscription) => {
+            sql += `('${subscription.event_id}', '${
+                subscription.user_id
+            }', '${new Date().toISOString()}'),`;
+        });
+
+        await query(sql.slice(0, sql.length - 1), []);
+    }
+
+    async DeleteSubscriptions() {
+        await query(
+            `DELETE FROM "Subscriptions" WHERE created_for_test=true`,
+            []
+        );
+    }
 
     CreateScenario(dateRange: number, count: number) {}
     DeleteScenario() {}
@@ -105,10 +147,28 @@ export class TestService {
         return rows;
     }
 
+    private async GetEvents(count?: number): Promise<IEvent[]> {
+        const { rows } = await query(
+            `SELECT * FROM "Events" where created_for_test=true LIMIT $1`,
+            [count]
+        );
+
+        return rows;
+    }
+
     private GetRandomDate(from: Date, to: Date): Date {
         const fromTime = from.getTime();
         const toTime = to.getTime();
 
-        return new Date(fromTime + Math.random() * (toTime - fromTime));
+        //Get Random Date between from and to
+        const date = new Date(fromTime + Math.random() * (toTime - fromTime));
+
+        date.setHours(
+            Math.random() * 23,
+            Math.round(Math.random() * 4) * 15,
+            0,
+            0
+        );
+        return date;
     }
 }

@@ -1,18 +1,24 @@
 import { INotificationStrategy } from "../def/INotificationStrategy";
 import { INotificationClient } from "../def/INotificationClient";
+import { INotificationLogger } from "../../NotificationLog/def/INotificationLogger";
+import { NotificationLogger } from "../../NotificationLog/impl/NotificationLogger";
+import { INotification } from "../def/Notification";
 
 export class BatchTextNotificationStrategy implements INotificationStrategy {
-    private readonly bindings: string[];
-    private readonly body: string;
-    private readonly client: INotificationClient;
+    private readonly Numbers: string[];
+    private readonly Body: string;
+    private readonly Client: INotificationClient;
+    private readonly Logger: INotificationLogger;
 
-    constructor(numbers: string[], body: string, client: INotificationClient) {
-        this.bindings = numbers.map((number) => {
-            return JSON.stringify({ binding_type: "sms", address: number });
-        });
-
-        this.body = body;
-        this.client = client;
+    constructor(
+        notification: INotification,
+        client: INotificationClient,
+        logger: INotificationLogger = new NotificationLogger()
+    ) {
+        this.Numbers = notification.to;
+        this.Body = notification.body;
+        this.Client = client;
+        this.Logger = logger;
     }
 
     async send(): Promise<void> {
@@ -20,10 +26,23 @@ export class BatchTextNotificationStrategy implements INotificationStrategy {
             throw new Error("Twilio Notify SID cannot be null");
         }
 
-        const response = await this.client.create({
-            toBinding: this.bindings,
-            body: this.body,
+        const response = await this.Client.send(
+            this.createBindings(),
+            this.Body
+        );
+
+        this.Logger.LogNotification({
+            body: this.Body,
+            timestamp: new Date(),
+            sent_to: this.Numbers,
+            sent_count: this.Numbers.length,
         });
         console.log(response);
+    }
+
+    private createBindings(): string[] {
+        return this.Numbers.map((number) => {
+            return JSON.stringify({ binding_type: "sms", address: number });
+        });
     }
 }

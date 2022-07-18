@@ -1,3 +1,9 @@
+import { NotificationKind } from "./NotificationKind";
+
 export interface INotificationClient {
-    create(notificationOptions: { toBinding: string[]; body: string }): void;
+    send(to: string[], body: string): Promise<boolean>;
+
+    SendVerification(to: string, channel: NotificationKind): Promise<boolean>;
+
+    Verify(to: string, code: string): Promise<boolean>;
 }
