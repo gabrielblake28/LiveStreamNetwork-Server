@@ -152,35 +152,12 @@ const testService = new TestService();
 //     );
 // }
 
-const notificationBroker = new NotificationBroker(
+new NotificationBroker(
     new EventService(),
     new SubscriptionService(),
     new NotificationFactory()
-);
-
-StartNotificationQueue();
-setTimeout(() => {
-    StartNotificationQueue();
-    console.log(new Date().toUTCString());
-}, 15 * 60 * 1000);
+).Initialize();
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
-function StartNotificationQueue() {
-    const date = new Date();
-
-    if (date.getMinutes() < 15) {
-        date.setHours(date.getHours(), 0, 0, 0);
-    } else if (date.getMinutes() < 30) {
-        date.setHours(date.getHours(), 15, 0, 0);
-    } else if (date.getMinutes() < 45) {
-        date.setHours(date.getHours(), 30, 0, 0);
-    } else {
-        date.setHours(date.getHours(), 45, 0, 0);
-    }
-
-    notificationBroker.QueueNotification(date);
-    console.log(date.toUTCString());
-}

@@ -26,10 +26,7 @@ export class BatchTextNotificationStrategy implements INotificationStrategy {
             throw new Error("Twilio Notify SID cannot be null");
         }
 
-        const response = await this.Client.send(
-            this.createBindings(),
-            this.Body
-        );
+        await this.Client.send(this.createBindings(), this.Body);
 
         this.Logger.LogNotification({
             body: this.Body,
