@@ -20,9 +20,21 @@ export class NotificationBroker implements INotificationBroker {
         this.SubscriptionService = subscriptionService;
         this.NotificationFactory = notificationFactory;
     }
+    Initialize(): Promise<void> {
+        return new Promise(() => {
+            let timeout: NodeJS.Timeout = setTimeout(() => {
+                this.QueueNotification(new Date());
+                setInterval(() => {
+                    this.QueueNotification(new Date());
+                    clearTimeout(timeout);
+                }, 15 * 60 * 1000);
+            }, this.getInitialNotificationDate(new Date()).getTime() - new Date().getTime());
+        });
+    }
 
     async QueueNotification(date: Date): Promise<void> {
         ///Get Upcoming Events (within 15 minutes);
+        date.setMinutes(date.getMinutes(), 0, 0);
         const events = await this.EventService.GetEventsAtStartTime(
             10000,
             0,
@@ -69,6 +81,26 @@ export class NotificationBroker implements INotificationBroker {
     private getDateIn(date: Date, minutes: number): Date {
         date.setTime(date.getTime() + minutes);
         return new Date(date);
+    }
+
+    private getInitialNotificationDate(date: Date): Date {
+        const initialDate = new Date(date);
+
+        if ([0, 15, 30, 45].includes(date.getMinutes())) {
+            return date;
+        }
+
+        if (date.getMinutes() < 15) {
+            initialDate.setMinutes(15, 0, 0);
+        } else if (date.getMinutes() < 30) {
+            initialDate.setMinutes(30, 0, 0);
+        } else if (date.getMinutes() < 45) {
+            initialDate.setMinutes(45, 0, 0);
+        } else {
+            initialDate.setMinutes(60, 0, 0);
+        }
+
+        return initialDate;
     }
 }
 
