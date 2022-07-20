@@ -5,7 +5,8 @@ import { ISearchProvider } from "../def/ISearchProvider";
 
 export class EventSearchProvider implements ISearchProvider {
     async SearchAsync(term: string): Promise<SearchResult> {
-        const sql = `Select * from search_event_titles($1)`;
+        const sql = `Select * from "Events" ORDER BY SIMILARITY(title, $1) DESC
+        LIMIT 15`;
 
         const { rows } = await query(sql, [term]);
 

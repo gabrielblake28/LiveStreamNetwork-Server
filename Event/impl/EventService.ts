@@ -129,7 +129,7 @@ export class EventService implements IEventService {
     }
 
     async GetEvent(id: string): Promise<IEvent> {
-        const sql = `SELECT * FROM "Events" WHERE event_id = $1`;
+        const sql = `SELECT * FROM "EventView" WHERE event_id = $1`;
 
         const { rows } = await query(sql, [id]);
 
@@ -190,7 +190,7 @@ export class EventService implements IEventService {
     }
 
     async GetSubscribedEvents(user_id: string): Promise<Partial<IEvent>[]> {
-        const sql = `Select event_id, user_id, title, display_name, image, start_timestamp, end_timestamp from "SubscriptionsView" where user_id = $1`;
+        const sql = `Select * from "SubscriptionsView" where user_id = $1`;
 
         const { rows } = await query(sql, [user_id]);
 
