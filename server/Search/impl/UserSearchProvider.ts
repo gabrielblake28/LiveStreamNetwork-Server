@@ -5,7 +5,8 @@ import { ISearchProvider } from "../def/ISearchProvider";
 
 export class UserSearchProvider implements ISearchProvider {
     async SearchAsync(term: string): Promise<SearchResult> {
-        const sql = `Select * from search_display_names($1)`;
+        const sql = `Select * from "Users" ORDER BY SIMILARITY(display_name, $1) DESC
+        LIMIT 8`;
 
         const { rows } = await query(sql, [term]);
 

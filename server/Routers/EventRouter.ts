@@ -113,3 +113,9 @@ EventRouter.get("/subscribed/:user_id", async (req: Request, res: Response) => {
         res.status(400).send("ERROR");
     }
 });
+
+EventRouter.delete("/:event_id", async (req: Request, res: Response) => {
+    const result = await eventService.DeleteEvent(req.body.event_id);
+
+    res.status(200).send(result);
+});
