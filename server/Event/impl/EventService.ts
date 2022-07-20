@@ -40,10 +40,14 @@ export class EventService implements IEventService {
         user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $4) u ON e.event_id = u.event_id WHERE featured = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+        const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $5) u ON e.event_id = u.event_id WHERE start_timestamp >= $1 AND start_timestamp <= $2 ORDER BY sub_count DESC LIMIT $3 OFFSET $4`;
 
+        const dateInSevenDays = new Date(date);
+        dateInSevenDays.setDate(date.getDate() + 7);
+        console.log(dateInSevenDays.toLocaleDateString());
         const { rows } = await query(sql, [
             date,
+            dateInSevenDays,
             limit,
             (page - 1) * limit,
             user_id,
@@ -58,9 +62,12 @@ export class EventService implements IEventService {
         user_id: string,
         date: Date = new Date()
     ): Promise<IEvent[]> {
-        const sql = `SELECT * FROM "Events" WHERE trending = true and start_timestamp >= $1 ORDER BY start_timestamp ASC LIMIT $2 OFFSET $3`;
+        const sql = `SELECT e.*, u.subscription_id FROM "TrendingEvents" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $3) u ON e.event_id = u.event_id ORDER BY sub_count DESC LIMIT $1 OFFSET $2`;
 
-        const { rows } = await query(sql, [date, limit, page * limit]);
+        const yesterday = new Date(date);
+        yesterday.setDate(yesterday.getDate() - 1);
+        console.log(yesterday);
+        const { rows } = await query(sql, [limit, page * limit, user_id]);
 
         return rows;
     }

@@ -58,6 +58,20 @@ EventRouter.post(
     }
 );
 
+EventRouter.get("/trending", async (req, res) => {
+    const result = await eventService.GetTrendingEvents(
+        parseInt(req.query.limit as string),
+        parseInt(req.query.page as string),
+        req.query.user_id as string
+    );
+
+    if (result) {
+        res.status(200).send(result);
+    } else {
+        res.status(400).send("ERROR");
+    }
+});
+
 EventRouter.get("/live", async (req: Request, res: Response) => {
     const result = await eventService.GetLiveEvents(
         parseInt(req.query.limit as string),

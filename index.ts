@@ -110,7 +110,7 @@ const testService = new TestService();
 //         testService.DeleteSubscriptions().then(() => {
 //             testService.CreateUsers(10000).then(() => {
 //                 testService
-//                     .CreateEvents(10000, new Date("2022-07-18"), true)
+//                     .CreateEvents(10000, new Date("2022-07-20"), true)
 //                     .then(() => {
 //                         testService.AddSubscriptions(500, 300).then(() => {
 //                             console.timeEnd("CreateEvents");
