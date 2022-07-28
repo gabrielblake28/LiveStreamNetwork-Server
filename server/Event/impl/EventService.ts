@@ -24,12 +24,7 @@ export class EventService implements IEventService {
     ): Promise<IEvent[]> {
         const sql = `SELECT *, CASE WHEN EXISTS (SELECT user_id FROM "Subscriptions" WHERE user_id = $1 AND event_id = e.event_id) THEN true else false END as is_subscribed FROM "EventView" e WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
 
-        const { rows } = await query(sql, [
-            user_id,
-            date,
-            limit,
-            (page - 1) * limit,
-        ]);
+        const { rows } = await query(sql, [user_id, date, limit, page * limit]);
 
         return rows;
     }
@@ -49,7 +44,7 @@ export class EventService implements IEventService {
             date,
             dateInSevenDays,
             limit,
-            (page - 1) * limit,
+            page * limit,
             user_id,
         ]);
 
