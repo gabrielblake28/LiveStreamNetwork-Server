@@ -34,11 +34,12 @@ export class SubscriptionService implements ISubscriptionService {
         resource: Partial<ISubscription>
     ): Promise<ResponsePayload<string>> {
         try {
-            const sql = `INSERT INTO "Subscriptions" (event_id, user_id) VALUES ($1, $2) RETURNING subscription_id`;
+            const sql = `INSERT INTO "Subscriptions" (event_id, user_id, created_date) VALUES ($1, $2, $3) RETURNING subscription_id`;
 
             const { rows } = await query(sql, [
                 resource.event_id,
                 resource.user_id,
+                resource.created_date,
             ]);
 
             return sendSuccess(201, rows[0].subscription_id);
