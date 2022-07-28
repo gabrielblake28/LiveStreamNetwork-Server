@@ -18,13 +18,14 @@ import { SubscriptionRouter } from "./server/Routers/SubscriptionRouter";
 import { SearchRouter } from "./server/Routers/SearchRouter";
 import { TestService } from "./server/TestService/impl/TestService";
 import { NotificationKind } from "./server/Notification/def/NotificationKind";
-import prompt from "prompt";
+// import prompt from "prompt";
 import { NotificationRouter } from "./server/Routers/NotificationRouter";
 import { MailGunEmailClient } from "./server/Notification/impl/MailgunEmailClient";
 import { INotificationClient } from "./server/Notification/def/INotificationClient";
 import { NotificationBroker } from "./server/Notification/impl/NotificationBroker";
 import { EventService } from "./server/Event/impl/EventService";
 import { NotificationFactory } from "./server/Notification/impl/NotificationFactory";
+import { FeedbackRouter } from "./server/Routers/FeedbackRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -101,6 +102,7 @@ app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
 app.use("/search", SearchRouter);
 app.use("/notification", NotificationRouter);
+app.use("/feedback", FeedbackRouter);
 
 const testService = new TestService();
 
