@@ -25,6 +25,7 @@ import { INotificationClient } from "./server/Notification/def/INotificationClie
 import { NotificationBroker } from "./server/Notification/impl/NotificationBroker";
 import { EventService } from "./server/Event/impl/EventService";
 import { NotificationFactory } from "./server/Notification/impl/NotificationFactory";
+import { AuthRouter } from "./server/Routers/AuthRouter";
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -101,6 +102,7 @@ app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
 app.use("/search", SearchRouter);
 app.use("/notification", NotificationRouter);
+app.use("/auth", AuthRouter);
 
 const testService = new TestService();
 
