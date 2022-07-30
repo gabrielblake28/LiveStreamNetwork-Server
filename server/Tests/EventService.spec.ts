@@ -3,415 +3,350 @@ import sinon from "sinon";
 import chai, { expect } from "chai";
 import { EventService } from "../Event/impl/EventService";
 import { IEvent } from "../Event/def/IEvent";
+import * as pgQuery from "../common/PostgresQuery";
+
+const error = new Error("Error");
 
 let sandbox: sinon.SinonSandbox;
 let eventService: EventService;
+let stubQuery: sinon.SinonStub;
+
+const expectedResult: IEvent[] = [
+    {
+        start_timestamp: new Date("2022-09-22T08:30:00"),
+        end_timestamp: new Date("2022-09-22T13:30:00"),
+        event_id: "3",
+        featured: true,
+        title: "final project",
+        user_id: "1",
+        description: "",
+        image: "",
+    },
+    {
+        start_timestamp: new Date("2022-09-22T10:30:00"),
+        end_timestamp: new Date("2022-09-22T11:30:00"),
+        event_id: "4",
+        featured: true,
+        title: "Some Other Project",
+        user_id: "3",
+        description: "generic blah blah",
+        image: "asdf",
+    },
+    {
+        start_timestamp: new Date("2022-09-22T06:30:00"),
+        end_timestamp: new Date("2022-09-22T14:30:00"),
+        event_id: "5",
+        featured: false,
+        title: "Another Project",
+        user_id: "4",
+        description: "proj",
+        image: "proj",
+    },
+];
+
 describe("Event Service", () => {
-    before(() => {
-        sandbox = sinon.createSandbox();
+    afterEach(() => {
+        sandbox.restore();
     });
 
     beforeEach(() => {
         eventService = new EventService();
+        sandbox = sinon.createSandbox();
+        stubQuery = sandbox.stub(pgQuery, "query");
     });
 
     describe("Should be able to fetch live events", () => {
         it("Should return all live events at the specified  date, limit, and offset", async () => {
-            const expectedResult: IEvent[] = [
-                {
-                    category_id: "3",
-                    start_timestamp: new Date("2022-09-22T08:30:00"),
-                    end_timestamp: new Date("2022-09-22T13:30:00"),
-                    event_id: "3",
-                    featured: true,
-                    title: "final project",
-                    user_id: "1",
-                    description: "",
-                    image: "",
-                },
-                {
-                    category_id: "3",
-                    start_timestamp: new Date("2022-09-22T10:30:00"),
-                    end_timestamp: new Date("2022-09-22T11:30:00"),
-                    event_id: "4",
-                    featured: true,
-                    title: "Some Other Project",
-                    user_id: "3",
-                    description: "generic blah blah",
-                    image: "asdf",
-                },
-                {
-                    category_id: "4",
-                    start_timestamp: new Date("2022-09-22T06:30:00"),
-                    end_timestamp: new Date("2022-09-22T14:30:00"),
-                    event_id: "5",
-                    featured: false,
-                    title: "Another Project",
-                    user_id: "4",
-                    description: "proj",
-                    image: "proj",
-                },
-            ];
-            const results = await eventService.GetLiveEvents(
-                3,
-                0,
-                new Date("2022-09-22T11:30")
-            );
+            stubQuery.resolves({ rows: expectedResult });
 
-            expect(results).to.eql(expectedResult);
+            const result = await eventService.GetLiveEvents(1, 1, "");
+
+            expect(result.result).equal("success");
+
+            expect(result.status).equal(200);
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult);
+            }
         });
 
-        // it("Should return all live events at the specified ");
+        it("Test return results when error thrown", async () => {
+            stubQuery.throws(error);
+            const result = await eventService.GetLiveEvents(1, 1, "");
+
+            expect(result.result).equal("error");
+            expect(result.status).equal(500);
+
+            if (result.result == "error") {
+                expect(result.message).equal(error.message);
+            }
+        });
     });
 
     describe("Should be able to fetch featured events", () => {
-        it("Should return a list of featured events", async () => {
-            const expectedResult: IEvent[] = [
-                {
-                    category_id: "3",
-                    start_timestamp: new Date("2022-09-22T08:30:00"),
-                    end_timestamp: new Date("2022-09-22T13:30:00"),
-                    event_id: "3",
-                    featured: true,
-                    title: "final project",
-                    user_id: "1",
-                    description: "",
-                    image: "",
-                },
-                {
-                    event_id: "6",
-                    title: "Was Live At Some Point\n",
-                    description: "asdf",
-                    image: "was live\n",
-                    featured: true,
-                    category_id: "4",
-                    user_id: "1",
-                    start_timestamp: new Date(
-                        "Thu Sep 22 2022 09:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Thu Sep 22 2022 14:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                },
-            ];
+        it("Test return result when query passes", async () => {
+            stubQuery.resolves({ rows: expectedResult });
 
-            const result = await eventService.GetFeaturedEvents(2, 0);
+            const result = await eventService.GetFeaturedEvents(1, 1, "");
 
-            expect(result).to.eql(expectedResult);
+            expect(result.status).equals(200);
+            expect(result.result).equal("success");
+
+            if (result.result == "success") {
+                expect(result.data).equal(expectedResult);
+            }
+        });
+
+        it("Test return result when query fails", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.GetFeaturedEvents(1, 1, "");
+
+            expect(result.status).equal(500);
+            expect(result.result).equal("error");
+
+            if (result.result == "error") {
+                expect(result.message).equal(error.message);
+            }
         });
     });
 
-    describe("Should be able to fetch events from all followed user_ids", () => {
-        it("Should return all matching events from a list of user_ids", async () => {
-            const expectedResult: IEvent[] = [
-                {
-                    event_id: "1",
-                    title: "Some Project random",
-                    description: "Some generic description",
-                    image: "blah blah blah",
-                    featured: false,
-                    category_id: "1",
-                    user_id: "1",
-                    start_timestamp: new Date(
-                        "Mon Oct 24 2022 10:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Mon Oct 24 2022 12:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                },
-                {
-                    event_id: "2",
-                    title: "Second Project",
-                    description: "more random projects",
-                    image: "hah hah hah",
-                    featured: false,
-                    category_id: "2",
-                    user_id: "2",
-                    start_timestamp: new Date(
-                        "Thu Nov 24 2022 11:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Thu Nov 24 2022 13:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                },
-                {
-                    event_id: "3",
-                    title: "final project",
-                    description: "",
-                    image: "",
-                    featured: true,
-                    category_id: "3",
-                    user_id: "1",
-                    start_timestamp: new Date(
-                        "Thu Sep 22 2022 08:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Thu Sep 22 2022 13:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                },
-            ];
+    describe("Should fetch events for a specific user", () => {
+        it("Test return result for fetching user events", async () => {
+            stubQuery.returns({ rows: expectedResult });
 
             const result = await eventService.GetEventsWithMatchingUserIds(
-                3,
-                0,
-                ["1", "2"]
-            );
-
-            expect(result).to.eql(expectedResult);
-        });
-    });
-
-    describe("Should be able to paginate event fetches and pull events by pages", () => {
-        it("Should pull events for specified limit {5} and offset {0}", async () => {
-            const expectedResult: IEvent[] = [
-                {
-                    event_id: "1",
-                    title: "Some Project random",
-                    description: "Some generic description",
-                    image: "blah blah blah",
-                    featured: false,
-                    category_id: "1",
-                    user_id: "1",
-                    start_timestamp: new Date(
-                        "Mon Oct 24 2022 10:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Mon Oct 24 2022 12:30:00 GMT-0700 (Pacific Daylight Time)"
-                    ),
-                },
-                {
-                    event_id: "2",
-                    title: "Second Project",
-                    description: "more random projects",
-                    image: "hah hah hah",
-                    featured: false,
-                    category_id: "2",
-                    user_id: "2",
-                    start_timestamp: new Date(
-                        "Thu Nov 24 2022 11:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Thu Nov 24 2022 13:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                },
-            ];
-
-            const result = await eventService.GetUpcomingEvents(
-                5,
-                0,
-                new Date("2022-10-23T08:30")
-            );
-
-            expect(result).to.eql(expectedResult);
-        });
-
-        it("Should pull events for specified limit {4} and offset {1}", async () => {
-            const expectedResult: IEvent[] = [
-                {
-                    event_id: "2",
-                    title: "Second Project",
-                    description: "more random projects",
-                    image: "hah hah hah",
-                    featured: false,
-                    category_id: "2",
-                    user_id: "2",
-                    start_timestamp: new Date(
-                        "Thu Nov 24 2022 11:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                    end_timestamp: new Date(
-                        "Thu Nov 24 2022 13:30:00 GMT-0800 (Pacific Standard Time)"
-                    ),
-                },
-            ];
-
-            const result = await eventService.GetUpcomingEvents(
-                4,
                 1,
-                new Date("2022-09-22T07:30")
+                1,
+                ""
             );
 
-            expect(result).to.eql(expectedResult);
+            expect(result.status).to.equal(200);
+            expect(result.result).to.equal("success");
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult);
+            }
+        });
+
+        it("Test return result when fetching user events fails", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.GetEventsWithMatchingUserIds(
+                1,
+                1,
+                "",
+                new Date("10-20-2020")
+            );
+
+            expect(result.status).to.equal(500);
+
+            expect(result.result).to.equal("error");
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
         });
     });
 
-    it("Should be able to fetch event for one user_id", async () => {
-        const expectedResult: IEvent[] = [
-            {
-                event_id: "2",
-                title: "Second Project",
-                description: "more random projects",
-                image: "hah hah hah",
-                featured: false,
-                category_id: "2",
-                user_id: "2",
-                start_timestamp: new Date(
-                    "Thu Nov 24 2022 11:30:00 GMT-0800 (Pacific Standard Time)"
-                ),
-                end_timestamp: new Date(
-                    "Thu Nov 24 2022 13:30:00 GMT-0800 (Pacific Standard Time)"
-                ),
-            },
-        ];
+    describe("Should fetch upcoming events", () => {
+        it("Test result from fetching upcoming events", async () => {
+            stubQuery.resolves({ rows: expectedResult });
 
-        const result = await eventService.GetEventsWithMatchingUserIds(3, 0, [
-            "2",
-        ]);
+            const result = await eventService.GetUpcomingEvents(1, 1, "");
 
-        expect(result).to.eql(expectedResult);
-    });
+            expect(result.status).to.equal(200);
+            expect(result.result).to.equal("success");
 
-    it("Should be able to get an event by id", async () => {
-        const event: IEvent = {
-            event_id: "2",
-            title: "Second Project",
-            description: "more random projects",
-            image: "hah hah hah",
-            featured: false,
-            category_id: "2",
-            user_id: "2",
-            start_timestamp: new Date(
-                "Thu Nov 24 2022 11:30:00 GMT-0800 (Pacific Standard Time)"
-            ),
-            end_timestamp: new Date(
-                "Thu Nov 24 2022 13:30:00 GMT-0800 (Pacific Standard Time)"
-            ),
-        };
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult);
+            }
+        });
 
-        const result = await eventService.GetEvent("2");
+        it("Test result from failing to fetch upcoming events", async () => {
+            stubQuery.throws(error);
 
-        expect(result).to.eql(event);
-    });
+            const result = await eventService.GetUpcomingEvents(1, 1, "");
 
-    it("Should create an event with given resource and event should be able to query event with returned id", async () => {
-        let eventData: IEvent = {
-            category_id: "1",
-            end_timestamp: new Date("2021-11-24T01:30"),
-            featured: true,
-            start_timestamp: new Date("2021-11-25T02:30"),
-            title: "My Newly Created Event",
-            description: "some description",
-            user_id: "99999999999",
-            image: "asdf",
-        };
+            expect(result.status).to.equal(500);
+            expect(result.result).to.equal("error");
 
-        const eventId = await eventService.CreateEvent(eventData);
-
-        const event = await eventService.GetEvent(eventId);
-
-        expect(event).to.eql(Object.assign(eventData, { event_id: eventId }));
-
-        await eventService.DeleteEvent(eventId);
-    });
-
-    it("should delete an event", async () => {
-        let eventData: IEvent = {
-            category_id: "1",
-            end_timestamp: new Date("2021-11-24T01:30"),
-            featured: true,
-            start_timestamp: new Date("2021-11-25T02:30"),
-            title: "My Newly Created Event",
-            description: "some description",
-            user_id: "99999999999",
-            image: "asdf",
-        };
-
-        const eventId = await eventService.CreateEvent(eventData);
-
-        const event = await eventService.GetEvent(eventId);
-
-        expect(event).to.eql(Object.assign(eventData, { event_id: eventId }));
-
-        await eventService.DeleteEvent(eventId);
-
-        expect(await eventService.GetEvent(eventId)).to.eql(undefined);
-    });
-
-    it("Should be able to change an event", async () => {
-        let eventData: IEvent = {
-            category_id: "1",
-            end_timestamp: new Date("2021-11-24T01:30"),
-            featured: true,
-            start_timestamp: new Date("2021-11-25T02:30"),
-            title: "My Newly Created Event",
-            description: "some description",
-            user_id: "99999999999",
-            image: "asdf",
-        };
-
-        const eventId = await eventService.CreateEvent(eventData);
-
-        const event = await eventService.UpdateEvent(
-            eventId,
-            Object.assign(eventData, { description: "Some other description" })
-        );
-
-        expect(event).to.not.eql(eventData);
-
-        expect(event).to.eql(
-            Object.assign(eventData, {
-                description: "Some other description",
-                event_id: eventId,
-            })
-        );
-
-        eventService.DeleteEvent(eventId);
-    });
-
-    describe("Should be able to manage event subscriptions", () => {
-        it("Should return true when user is subscribed to an event", async () => {
-            expect(await eventService.IsSubscribedToEvent("2", "3")).to.equal(
-                false
-            );
-
-            const subcriptionId = await eventService.SubscribeToEvent("2", "3");
-
-            expect(await eventService.IsSubscribedToEvent("2", "3")).to.equal(
-                true
-            );
-
-            await eventService.UnsubscribeToEvent(subcriptionId);
-
-            expect(await eventService.IsSubscribedToEvent("2", "3")).to.equal(
-                false
-            );
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
         });
     });
 
-    it("Should be able to fetch events by Twitch Category", async () => {
-        const expectedResult: IEvent[] = [
-            {
-                category_id: "3",
-                start_timestamp: new Date("2022-09-22T08:30:00"),
-                end_timestamp: new Date("2022-09-22T13:30:00"),
-                event_id: "3",
-                featured: true,
-                title: "final project",
-                user_id: "1",
-                description: "",
-                image: "",
-            },
-            {
-                category_id: "3",
-                start_timestamp: new Date("2022-09-22T10:30:00"),
-                end_timestamp: new Date("2022-09-22T11:30:00"),
-                event_id: "4",
-                featured: true,
-                title: "Some Other Project",
-                user_id: "3",
-                description: "generic blah blah",
-                image: "asdf",
-            },
-        ];
+    describe("Should fetch an event by event_id", () => {
+        it("Test result of fetching event by event_id", async () => {
+            stubQuery.resolves({ rows: expectedResult });
+            const result = await eventService.GetEvent("2");
 
-        const result = await eventService.GetEventsByTwitchCategory(
-            "3",
-            5,
-            0,
-            new Date("2022-09-22T08:30:00")
-        );
+            expect(result.status).to.equal(200);
+            expect(result.result).to.equal("success");
 
-        expect(result).to.eql(expectedResult);
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult[0]);
+            }
+        });
+
+        it("Test result when fetching event by event_id fails", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.GetEvent("123123123123");
+
+            expect(result.status).to.equal(500);
+            expect(result.result).to.equal("error");
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
     });
 
-    //Should be able to search an event
+    describe("Should delete an event", () => {
+        it("Test result when an event is deleted", async () => {
+            const result = await eventService.DeleteEvent("2");
+
+            expect(result.result).to.equal("success");
+            expect(result.status).to.equal(204);
+
+            if (result.result == "success") {
+                expect(result.data).to.eql("Event 2 successfully deleted");
+            }
+        });
+
+        it("Test result when failed to delete event", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.DeleteEvent("3");
+
+            expect(result.result).to.equal("error");
+            expect(result.status).to.equal(500);
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
+    });
+
+    describe("Should update an event", () => {
+        it("Test result of updating an event", async () => {
+            stubQuery.resolves({ rows: expectedResult });
+
+            const result = await eventService.UpdateEvent(
+                "2",
+                expectedResult[0]
+            );
+
+            expect(result.result).to.equal("success");
+            expect(result.status).to.equal(200);
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult[0]);
+            }
+        });
+
+        it("Test result of failing to update an event", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.UpdateEvent(
+                "2",
+                expectedResult[0]
+            );
+
+            expect(result.result).to.equal("error");
+            expect(result.status).to.equal(500);
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
+    });
+
+    describe("Should create an event", () => {
+        it("Test result of creating an event", async () => {
+            stubQuery.resolves({ rows: expectedResult });
+
+            const result = await eventService.CreateEvent(expectedResult[0]);
+
+            expect(result.status).to.equal(201);
+            expect(result.result).to.equal("success");
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult[0].event_id);
+            }
+        });
+
+        it("Test result of failing to create an evnet", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.CreateEvent(expectedResult[0]);
+
+            expect(result.status).to.equal(500);
+            expect(result.result).to.equal("error");
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
+    });
+
+    describe("Should get sponsored events", () => {
+        it("Test result of fetching sponsored events", async () => {
+            stubQuery.resolves({ rows: expectedResult });
+
+            const result = await eventService.GetSponsoredEvents(1, 1, "");
+
+            expect(result.result).to.equal("success");
+            expect(result.status).to.equal(200);
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult);
+            }
+        });
+
+        it("Test result of failing to fetch sponsored events", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.GetSponsoredEvents(1, 1, "");
+
+            expect(result.status).to.equal(500);
+            expect(result.result).to.equal("error");
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
+    });
+
+    describe("Should Get events a user has subscribed to", () => {
+        it("Test result of fetching events a user has subscribed to", async () => {
+            stubQuery.resolves({ rows: expectedResult });
+
+            const result = await eventService.GetSubscribedEvents("1");
+
+            expect(result.result).to.equal("success");
+
+            expect(result.status).to.equal(200);
+
+            if (result.result == "success") {
+                expect(result.data).to.equal(expectedResult);
+            }
+        });
+
+        it("Test result of failing to fetch events a user has subscribed to", async () => {
+            stubQuery.throws(error);
+
+            const result = await eventService.GetSubscribedEvents("1");
+
+            expect(result.result).to.equal("error");
+
+            expect(result.status).to.equal(500);
+
+            if (result.result == "error") {
+                expect(result.message).to.equal(error.message);
+            }
+        });
+    });
 });

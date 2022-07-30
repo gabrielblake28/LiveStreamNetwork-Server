@@ -16,7 +16,7 @@ const EVENT_ID = "289";
 const USER_ID = "50";
 const ERROR = new Error("ERROR");
 
-describe.only("Subscription Service", () => {
+describe("Subscription Service", () => {
     before(() => {
         sandbox = sinon.createSandbox();
         stub = sandbox.stub();
