@@ -1,15 +1,11 @@
 import { query } from "../../common/PostgresQuery";
 import { IUser } from "../def/IUser";
 import { IUserService } from "../def/IUserService";
-import bcrypt from "bcrypt";
 import { ITwitchUserData } from "../def/ITwitchUserData";
-
-const saltRounds = 10;
-const jwt = require("jsonwebtoken");
 
 export class UserService implements IUserService {
     async CreateUser(resource: IUser): Promise<IUser> {
-        const sql = `INSERT INTO "Users" (twitch_id, display_name, description, profile_image_url, view_count, email, phone, created_at, offline_image_url, broadcaster_type, type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
+        const sql = `INSERT INTO "Users" (twitch_id, display_name, description, profile_image_url, view_count, email, phone, created_at, offline_image_url, broadcaster_type, type, created_at_source) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
 
         const { rows } = await query(sql, [
             resource.twitch_id,
@@ -23,6 +19,7 @@ export class UserService implements IUserService {
             resource.offline_image_url,
             resource.broadcaster_type,
             resource.type,
+            resource.created_at_source,
         ]);
 
         return rows[0].user_id;
@@ -75,13 +72,14 @@ export class UserService implements IUserService {
                 profile_image_url: resource.profile_image_url,
                 view_count: resource.view_count,
                 email: resource.email,
-                created_at: resource.created_at,
+                created_at: new Date(),
                 offline_image_url: resource.offline_image_url,
                 broadcaster_type: resource.broadcaster_type,
                 type: resource.type,
                 login: resource.login,
                 allow_email: true,
                 allow_sms: true,
+                created_at_source: resource.created_at,
             });
         }
         return rows[0];

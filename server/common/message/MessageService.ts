@@ -1,9 +1,11 @@
 export interface SuccessPayload<T> {
+    result: "success";
     data: T;
     status: number;
 }
 
 export interface ErrorPayload {
+    result: "error";
     message: string;
     status: number;
 }
@@ -14,14 +16,14 @@ export const sendSuccess = <T>(
     status: number = 200,
     data: T
 ): ResponsePayload<T> => {
-    return { data, status };
+    return { data, status, result: "success" };
 };
 
 export const sendFailure = (
     status: number = 400,
     message: string
 ): ErrorPayload => {
-    return { status, message };
+    return { status, message, result: "error" };
 };
 
 const MessageService = {

@@ -6,7 +6,8 @@ export interface IUser {
     profile_image_url: string;
     view_count: number;
     email: string;
-    created_at: string;
+    created_at: Date;
+    created_at_source: string;
     broadcaster_type: string;
     login: string;
     offline_image_url: string;
