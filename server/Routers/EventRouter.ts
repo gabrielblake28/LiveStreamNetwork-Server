@@ -20,10 +20,10 @@ EventRouter.get("/", async (req: Request, res: Response) => {
         req.query.user_id as string
     );
 
-    if (result) {
-        res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
     } else {
-        res.status(400).send("ERROR");
+        res.status(result.status).send(result.message);
     }
 });
 
@@ -50,10 +50,10 @@ EventRouter.post(
             Object.assign({}, req.body, { image: response.Location })
         );
 
-        if (result) {
-            res.status(201).send(result);
+        if (result.result == "success") {
+            res.status(result.status).send(result.data);
         } else {
-            res.status(400).send("ERROR");
+            res.status(result.status).send(result.message);
         }
     }
 );
@@ -65,10 +65,10 @@ EventRouter.get("/trending", async (req, res) => {
         req.query.user_id as string
     );
 
-    if (result) {
-        res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
     } else {
-        res.status(400).send("ERROR");
+        res.status(result.status).send(result.message);
     }
 });
 
@@ -79,10 +79,10 @@ EventRouter.get("/live", async (req: Request, res: Response) => {
         req.query.user_id as string
     );
 
-    if (result) {
-        res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
     } else {
-        res.status(400).send("ERROR");
+        res.status(result.status).send(result.message);
     }
 });
 
@@ -93,19 +93,11 @@ EventRouter.get("/featured", async (req: Request, res: Response) => {
         req.query.user_id as string
     );
 
-    if (result) {
-        res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
     } else {
-        res.status(400).send("ERROR");
+        res.status(result.status).send(result.message);
     }
-});
-
-EventRouter.get("/category", async (req: Request, res: Response) => {
-    const result = await eventService.GetEventsByTwitchCategory(
-        req.body.category_id,
-        req.body.limit,
-        req.body.page
-    );
 });
 
 EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
@@ -115,21 +107,29 @@ EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
 
 EventRouter.get("/:event_id", async (req: Request, res: Response) => {
     const result = await eventService.GetEvent(req.body.event_id);
-    return res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
+    } else {
+        res.status(result.status).send(result.message);
+    }
 });
 
 EventRouter.get("/subscribed/:user_id", async (req: Request, res: Response) => {
     const result = await eventService.GetSubscribedEvents(req.params.user_id);
 
-    if (result) {
-        res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
     } else {
-        res.status(400).send("ERROR");
+        res.status(result.status).send(result.message);
     }
 });
 
 EventRouter.delete("/:event_id", async (req: Request, res: Response) => {
     const result = await eventService.DeleteEvent(req.body.event_id);
 
-    res.status(200).send(result);
+    if (result.result == "success") {
+        res.status(result.status).send(result.data);
+    } else {
+        res.status(result.status).send(result.message);
+    }
 });

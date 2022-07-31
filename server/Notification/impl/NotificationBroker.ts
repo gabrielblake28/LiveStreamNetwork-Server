@@ -40,42 +40,43 @@ export class NotificationBroker implements INotificationBroker {
             0,
             this.getDateIn(new Date(date), 15 * 60 * 1000)
         );
+        if (events.result == "success") {
+            events.data.forEach(async (event) => {
+                const subscriptions =
+                    await this.SubscriptionService.BatchGetSubscriptions(
+                        event.event_id!
+                    );
 
-        events.forEach(async (event) => {
-            const subscriptions =
-                await this.SubscriptionService.BatchGetSubscriptions(
-                    event.event_id!
-                );
+                const emails: string[] = [];
+                const numbers: string[] = [];
 
-            const emails: string[] = [];
-            const numbers: string[] = [];
+                subscriptions.forEach((subscription) => {
+                    if (subscription.allow_email) {
+                        emails.push(subscription.email);
+                    }
 
-            subscriptions.forEach((subscription) => {
-                if (subscription.allow_email) {
-                    emails.push(subscription.email);
+                    if (subscription.allow_sms) {
+                        numbers.push(subscription.phone);
+                    }
+                });
+
+                if (emails.length > 0) {
+                    this.NotificationFactory.CreateNotificationWorker({
+                        Kind: "email",
+                        body: `Send email for ${event.event_id}`,
+                        to: emails,
+                    }).send();
                 }
 
-                if (subscription.allow_sms) {
-                    numbers.push(subscription.phone);
+                if (numbers.length > 0) {
+                    this.NotificationFactory.CreateNotificationWorker({
+                        Kind: "sms",
+                        body: `Send text for ${event.event_id}`,
+                        to: numbers,
+                    }).send();
                 }
             });
-
-            if (emails.length > 0) {
-                this.NotificationFactory.CreateNotificationWorker({
-                    Kind: "email",
-                    body: `Send email for ${event.event_id}`,
-                    to: emails,
-                }).send();
-            }
-
-            if (numbers.length > 0) {
-                this.NotificationFactory.CreateNotificationWorker({
-                    Kind: "sms",
-                    body: `Send text for ${event.event_id}`,
-                    to: numbers,
-                }).send();
-            }
-        });
+        }
     }
 
     private getDateIn(date: Date, minutes: number): Date {
