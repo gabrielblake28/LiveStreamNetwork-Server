@@ -11,4 +11,5 @@ export interface IEvent {
     display_name?: string;
     email?: string;
     subscription_id?: string;
+    created_for_test: boolean;
 }
