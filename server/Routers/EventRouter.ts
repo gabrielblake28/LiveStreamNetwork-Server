@@ -47,7 +47,10 @@ EventRouter.post(
             .promise();
 
         const result = await eventService.CreateEvent(
-            Object.assign({}, req.body, { image: response.Location })
+            Object.assign({}, req.body, {
+                image: response.Location,
+                aws_image_key: response.Key,
+            })
         );
 
         if (result.result == "success") {
@@ -106,13 +109,49 @@ EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
 });
 
 EventRouter.get("/:event_id", async (req: Request, res: Response) => {
-    const result = await eventService.GetEvent(req.body.event_id);
+    const result = await eventService.GetEvent(
+        req.params.event_id as string,
+        req.query.user_id as string
+    );
     if (result.result == "success") {
         res.status(result.status).send(result.data);
     } else {
         res.status(result.status).send(result.message);
     }
 });
+
+EventRouter.put(
+    "/:event_id",
+    Upload.single("file"),
+    async (req: Request, res: Response) => {
+        awsSDK.config.update({
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        });
+        const s3 = new awsSDK.S3();
+
+        const response = await s3
+            .upload({
+                Bucket: "" + process.env.S3_BUCKET_NAME,
+                Key: req.body.aws_image_key || uuidv4(),
+                Body: req.file?.buffer,
+                ContentType: "image/jpeg",
+            })
+            .promise();
+
+        const result = await eventService.UpdateEvent(
+            req.body.event_id,
+            Object.assign({}, req.body, {
+                image: response.Location,
+                aws_image_key: response.Key,
+            })
+        );
+
+        res.status(result.status).send(
+            result.result == "success" ? result.data : result.message
+        );
+    }
+);
 
 EventRouter.get("/subscribed/:user_id", async (req: Request, res: Response) => {
     const result = await eventService.GetSubscribedEvents(req.params.user_id);
@@ -125,6 +164,32 @@ EventRouter.get("/subscribed/:user_id", async (req: Request, res: Response) => {
 });
 
 EventRouter.delete("/:event_id", async (req: Request, res: Response) => {
+    const event = await eventService.GetEvent(
+        req.body.event_id,
+        req.body.user_id
+    );
+
+    if (event.result == "success") {
+        awsSDK.config.update({
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        });
+        const s3 = new awsSDK.S3();
+
+        s3.deleteObject({
+            Bucket: "" + process.env.S3_BUCKET_NAME,
+            Key: event.data.aws_image_key,
+        }).promise();
+
+        const result = await eventService.DeleteEvent(req.body.event_id);
+
+        res.status(result.status).send(
+            result.result == "success" ? result.data : result.message
+        );
+    } else {
+        res.status(event.status).send(event.message);
+    }
+
     const result = await eventService.DeleteEvent(req.body.event_id);
 
     if (result.result == "success") {

@@ -103,9 +103,12 @@ export interface IEventService {
 
     /**
      * Get an event by a given id
-     * @param id event id
+     * @param event_id event id
      */
-    GetEvent(id: string): Promise<ResponsePayload<IEvent>>;
+    GetEvent(
+        event_id: string,
+        user_id: string
+    ): Promise<ResponsePayload<IEvent>>;
 
     /**
      * Delete an event by a given id

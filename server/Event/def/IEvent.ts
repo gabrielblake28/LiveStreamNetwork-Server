@@ -12,4 +12,5 @@ export interface IEvent {
     email?: string;
     subscription_id?: string;
     created_for_test: boolean;
+    aws_image_key: string;
 }
