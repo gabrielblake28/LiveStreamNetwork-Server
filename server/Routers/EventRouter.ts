@@ -106,7 +106,10 @@ EventRouter.use("/:event_id*", (req: Request, res: Response, next) => {
 });
 
 EventRouter.get("/:event_id", async (req: Request, res: Response) => {
-    const result = await eventService.GetEvent(req.body.event_id);
+    const result = await eventService.GetEvent(
+        req.query.event_id as string,
+        req.query.user_id as string
+    );
     if (result.result == "success") {
         res.status(result.status).send(result.data);
     } else {

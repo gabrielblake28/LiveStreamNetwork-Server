@@ -21,6 +21,8 @@ const expectedResult: IEvent[] = [
         user_id: "1",
         description: "",
         image: "",
+        aws_image_key: "",
+        created_for_test: false,
     },
     {
         start_timestamp: new Date("2022-09-22T10:30:00"),
@@ -30,7 +32,9 @@ const expectedResult: IEvent[] = [
         title: "Some Other Project",
         user_id: "3",
         description: "generic blah blah",
-        image: "asdf",
+        image: "",
+        aws_image_key: "",
+        created_for_test: false,
     },
     {
         start_timestamp: new Date("2022-09-22T06:30:00"),
@@ -40,7 +44,9 @@ const expectedResult: IEvent[] = [
         title: "Another Project",
         user_id: "4",
         description: "proj",
-        image: "proj",
+        image: "",
+        aws_image_key: "",
+        created_for_test: false,
     },
 ];
 
