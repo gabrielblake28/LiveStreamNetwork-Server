@@ -175,11 +175,14 @@ export class EventService implements IEventService {
         }
     }
 
-    async GetEvent(id: string): Promise<ResponsePayload<IEvent>> {
+    async GetEvent(
+        event_id: string,
+        user_id: string
+    ): Promise<ResponsePayload<IEvent>> {
         try {
-            const sql = `SELECT * FROM "EventView" WHERE event_id = $1`;
+            const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $2) u ON e.event_id = u.event_id WHERE e.event_id = $1`;
 
-            const { rows } = await query(sql, [id]);
+            const { rows } = await query(sql, [event_id, user_id]);
 
             return sendSuccess(200, rows[0]);
         } catch (e) {

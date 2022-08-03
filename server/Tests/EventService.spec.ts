@@ -32,7 +32,7 @@ const expectedResult: IEvent[] = [
         title: "Some Other Project",
         user_id: "3",
         description: "generic blah blah",
-        image: "",
+        image: "asdf",
         aws_image_key: "",
         created_for_test: false,
     },
@@ -44,7 +44,7 @@ const expectedResult: IEvent[] = [
         title: "Another Project",
         user_id: "4",
         description: "proj",
-        image: "",
+        image: "proj",
         aws_image_key: "",
         created_for_test: false,
     },
@@ -186,7 +186,7 @@ describe("Event Service", () => {
     describe("Should fetch an event by event_id", () => {
         it("Test result of fetching event by event_id", async () => {
             stubQuery.resolves({ rows: expectedResult });
-            const result = await eventService.GetEvent("2");
+            const result = await eventService.GetEvent("2", "2");
 
             expect(result.status).to.equal(200);
             expect(result.result).to.equal("success");
@@ -199,7 +199,7 @@ describe("Event Service", () => {
         it("Test result when fetching event by event_id fails", async () => {
             stubQuery.throws(error);
 
-            const result = await eventService.GetEvent("123123123123");
+            const result = await eventService.GetEvent("123123123123", "2");
 
             expect(result.status).to.equal(500);
             expect(result.result).to.equal("error");
