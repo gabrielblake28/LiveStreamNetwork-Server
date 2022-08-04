@@ -82,8 +82,20 @@ app.use(cors());
 app.get("/auth/twitch/callback", async (req, res) => {
     const tokens = await getTokens((req.query?.code as string) || "");
 
-    res.cookie("evently_access_token", tokens.data.access_token)
-        .cookie("evently_refresh_token", tokens.data.refresh_token)
+    res.cookie("evently_access_token", tokens.data.access_token, {
+        domain:
+            process.env.NODE_ENV == "production"
+                ? "http://www.livestreamnetwork.tv/"
+                : "http://localhost:3000",
+        httpOnly: false,
+    })
+        .cookie("evently_refresh_token", tokens.data.refresh_token, {
+            domain:
+                process.env.NODE_ENV == "production"
+                    ? "http://www.livestreamnetwork.tv/"
+                    : "http://localhost:3000",
+            httpOnly: false,
+        })
         .redirect(
             process.env.NODE_ENV == "production"
                 ? "http://www.livestreamnetwork.tv/"
