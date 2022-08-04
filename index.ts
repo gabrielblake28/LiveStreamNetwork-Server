@@ -100,7 +100,7 @@ const getTokens = async (accessToken: string) => {
         grant_type: "authorization_code",
         redirect_uri:
             process.env.NODE_ENV == "production"
-                ? "https://lsn-server1.herokuapp.com/callback"
+                ? "https://lsn-server1.herokuapp.com/auth/twitch/callback"
                 : "http://localhost:3500/auth/twitch/callback",
     });
 };
