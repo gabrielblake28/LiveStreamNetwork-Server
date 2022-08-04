@@ -84,7 +84,11 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
     res.cookie("evently_access_token", tokens.data.access_token)
         .cookie("evently_refresh_token", tokens.data.refresh_token)
-        .redirect("http://localhost:3000");
+        .redirect(
+            process.env.NODE_ENV == "production"
+                ? "https://livestreamnetwork.tv"
+                : "http://localhost:3000"
+        );
     console.log(tokens.data.access_token);
 });
 
@@ -94,7 +98,10 @@ const getTokens = async (accessToken: string) => {
         Client_Secret: process.env.TWITCH_SECRET,
         code: accessToken,
         grant_type: "authorization_code",
-        redirect_uri: "http://localhost:3500/auth/twitch/callback",
+        redirect_uri:
+            process.env.NODE_ENV == "production"
+                ? "https://lsn-server1.herokuapp.com/callback"
+                : "http://localhost:3500/auth/twitch/callback",
     });
 };
 
