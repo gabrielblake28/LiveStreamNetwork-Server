@@ -1,1 +1,1 @@
-web: set NODE_ENV=production&&node dist/index.js
+ web: env-cmd -e production node dist/index.js

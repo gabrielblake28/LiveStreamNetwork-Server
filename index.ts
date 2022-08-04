@@ -2,21 +2,32 @@ import cors from "cors";
 import express from "express";
 import * as http from "http";
 import twilio, { Twilio } from "twilio";
-import { BatchTextNotificationStrategy } from "./Notification/impl/BatchTextNotificationStrategy";
-import { MockNotificationClient } from "./Notification/impl/MockNotificationClient";
-import { NotificationService } from "./Notification/impl/NotificationService";
-import { TwilioClientWrapper } from "./Notification/impl/TwilioClientWrapper";
-import { SubscriptionService } from "./Subscriptions/impl/SubscriptionService";
+import { BatchTextNotificationStrategy } from "./server/Notification/impl/BatchTextNotificationStrategy";
+import { MockNotificationClient } from "./server/Notification/impl/MockNotificationClient";
+import { NotificationService } from "./server/Notification/impl/NotificationService";
+import { TwilioClientWrapper } from "./server/Notification/impl/TwilioClientWrapper";
+import { SubscriptionService } from "./server/Subscriptions/impl/SubscriptionService";
 import axios from "axios";
-import { UserRouter } from "./Routers/UserRouter";
-import { EventRouter } from "./Routers/EventRouter";
+import { UserRouter } from "./server/Routers/UserRouter";
+import { EventRouter } from "./server/Routers/EventRouter";
 import passport from "passport";
 // import { uploadFile } from "./ThumbnailUpload/ThumbnailUploadService";
-import { TwitchUserRouter } from "./Routers/TwitchUserRouter";
-import { FileUploadRouter } from "./Routers/FileUploadRouter";
-import { SubscriptionRouter } from "./Routers/SubscriptionRouter";
-import { SearchRouter } from "./Routers/SearchRouter";
-import { TestService } from "./TestService/impl/TestService";
+import { TwitchUserRouter } from "./server/Routers/TwitchUserRouter";
+import { FileUploadRouter } from "./server/Routers/FileUploadRouter";
+import { SubscriptionRouter } from "./server/Routers/SubscriptionRouter";
+import { SearchRouter } from "./server/Routers/SearchRouter";
+import { TestService } from "./server/TestService/impl/TestService";
+import { NotificationKind } from "./server/Notification/def/NotificationKind";
+// import prompt from "prompt";
+import { NotificationRouter } from "./server/Routers/NotificationRouter";
+import { MailGunEmailClient } from "./server/Notification/impl/MailgunEmailClient";
+import { INotificationClient } from "./server/Notification/def/INotificationClient";
+import { NotificationBroker } from "./server/Notification/impl/NotificationBroker";
+import { EventService } from "./server/Event/impl/EventService";
+import { NotificationFactory } from "./server/Notification/impl/NotificationFactory";
+import { AuthRouter } from "./server/Routers/AuthRouter";
+import { FeedbackRouter } from "./server/Routers/FeedbackRouter";
+
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 
@@ -46,24 +57,19 @@ const cookieParser = require("cookie-parser");
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
 const PORT = process.env.PORT || 3500;
-// export const TwilioClient = new TwilioClientWrapper(
-//     process.env.TWILIO_ACCOUNT_SID || "",
-//     process.env.TWILIO_NOTIFY_SID || "",
-//     process.env.TWILIO_AUTH_TOKEN || ""
+
+// export const TwilioClient = new MockNotificationClient();
+
+// const batchTextNotificationStrategy = new BatchTextNotificationStrategy(
+//     ["+18635129916"],
+//     "Some Generic Message",
+//     TwilioClient
 // );
 
-export const TwilioClient = new MockNotificationClient();
-
-const batchTextNotificationStrategy = new BatchTextNotificationStrategy(
-    ["+18635129916"],
-    "Some Generic Message",
-    TwilioClient
-);
-
-new SubscriptionService().BatchGetSubscriptions(["289"]);
-setInterval(() => {
-    batchTextNotificationStrategy.send();
-}, 300000);
+// new SubscriptionService().BatchGetSubscriptions(["289"]);
+// setInterval(() => {
+//     batchTextNotificationStrategy.send();
+// }, 300000);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -97,12 +103,66 @@ app.use("/user", UserRouter);
 app.use("/event", EventRouter);
 app.use("/subscription", SubscriptionRouter);
 app.use("/search", SearchRouter);
+app.use("/notification", NotificationRouter);
+app.use("/auth", AuthRouter);
+app.use("/feedback", FeedbackRouter);
 
 const testService = new TestService();
 
-console.time("CreateEvents");
-// testService.CreateEvents(10000, new Date("2023-08-01"), true);
-console.timeEnd("CreateEvents");
+// console.time("CreateEvents");
+// testService.DeleteEvents().then(() => {
+//     testService.DeleteUsers().then(() => {
+//         testService.DeleteSubscriptions().then(() => {
+//             testService.CreateUsers(10000).then(() => {
+//                 testService
+//                     .CreateEvents(10000, new Date("2022-07-20"), true)
+//                     .then(() => {
+//                         testService.AddSubscriptions(500, 300).then(() => {
+//                             console.timeEnd("CreateEvents");
+//                         });
+//                     });
+//             });
+//         });
+//     });
+// });
+
+// const phone = "+18635129916";
+// TwilioClient.SendVerification(phone, "sms").then((result) => {
+//     console.log(result);
+
+//     prompt.start();
+
+//     prompt.get(["code"], function (err, result) {
+//         if (err) {
+//             console.log("Error");
+//         } else {
+//             TwilioClient.Verify(phone, result.code as string).then((res) =>
+//                 console.log(res)
+//             );
+//         }
+//     });
+// });
+// let client: INotificationClient;
+
+// if (process.env.MAILGUN_SANDBOX_KEY && process.env.MAILGUN_SANDBOX_DOMAIN) {
+//     client = new MailGunEmailClient(
+//         process.env.MAILGUN_SANDBOX_KEY,
+//         process.env.MAILGUN_SANDBOX_DOMAIN
+//     );
+//     client.send([], "");
+// } else {
+//     console.log(
+//         process.env.MAILGUN_SANDBOX_KEY,
+//         process.env.MAILGUN_SANDBOX_DOMAIN
+//     );
+// }
+
+new NotificationBroker(
+    new EventService(),
+    new SubscriptionService(),
+    new NotificationFactory()
+).Initialize();
+
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
