@@ -86,7 +86,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
         .cookie("evently_refresh_token", tokens.data.refresh_token)
         .redirect(
             process.env.NODE_ENV == "production"
-                ? "https://livestreamnetwork.tv"
+                ? "http://www.livestreamnetwork.tv/"
                 : "http://localhost:3000"
         );
     console.log(tokens.data.access_token);
