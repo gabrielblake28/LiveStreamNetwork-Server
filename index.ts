@@ -100,10 +100,9 @@ app.get("/auth/twitch/callback", async (req, res) => {
         })
         .redirect(
             process.env.NODE_ENV == "production"
-                ? "http://www.livestreamnetwork.tv/"
+                ? "https://www.livestreamnetwork.tv/"
                 : "http://localhost:3000"
         );
-    console.log(tokens.data.access_token);
 });
 
 const getTokens = async (accessToken: string) => {
