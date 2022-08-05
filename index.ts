@@ -83,7 +83,11 @@ app.get("/auth/twitch/callback", async (req, res) => {
     const tokens = await getTokens((req.query?.code as string) || "");
 
     console.log(tokens);
-    res.cookie("evently_access_token", tokens.data.access_token, {})
+    res.cookie("evently_access_token", tokens.data.access_token, {
+        domain: ".livestreamnetwork.tv",
+        secure: true,
+        sameSite: "lax",
+    })
         .cookie("evently_refresh_token", tokens.data.refresh_token, {})
         .redirect(
             process.env.NODE_ENV == "production"
