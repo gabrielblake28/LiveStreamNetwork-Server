@@ -87,7 +87,8 @@ app.get("/auth/twitch/callback", async (req, res) => {
             process.env.NODE_ENV == "production"
                 ? "https://www.livestreamnetwork.tv/"
                 : "http://localhost:3000",
-        httpOnly: false,
+        secure: true,
+        // httpOnly: false,
     })
         .cookie("evently_refresh_token", tokens.data.refresh_token, {
             domain:
@@ -95,7 +96,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
                     ? "https://www.livestreamnetwork.tv/"
                     : "http://localhost:3000",
             secure: true,
-            httpOnly: true,
+            // httpOnly: true,
         })
         .redirect(
             process.env.NODE_ENV == "production"
@@ -113,7 +114,7 @@ const getTokens = async (accessToken: string) => {
         grant_type: "authorization_code",
         redirect_uri:
             process.env.NODE_ENV == "production"
-                ? "http://lsn-server1.herokuapp.com/auth/twitch/callback"
+                ? "https://lsn-server1.herokuapp.com/auth/twitch/callback"
                 : "http://localhost:3500/auth/twitch/callback",
     });
 };
