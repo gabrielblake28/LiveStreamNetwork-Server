@@ -27,6 +27,7 @@ import { EventService } from "./server/Event/impl/EventService";
 import { NotificationFactory } from "./server/Notification/impl/NotificationFactory";
 import { AuthRouter } from "./server/Routers/AuthRouter";
 import { FeedbackRouter } from "./server/Routers/FeedbackRouter";
+import { rateLimiterUsingThirdParty } from "./server/MiddleWare/RateLimiter";
 
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
@@ -71,6 +72,7 @@ const PORT = process.env.PORT || 3500;
 //     batchTextNotificationStrategy.send();
 // }, 300000);
 
+app.use(rateLimiterUsingThirdParty);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cookieSession({ secret: "secretToken" }));
@@ -84,14 +86,18 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
     console.log(tokens);
     res.cookie("evently_access_token", tokens.data.access_token, {
-        domain: ".livestreamnetwork.tv",
+        domain:
+            process.env.NODE_ENV == "production" ? ".livestreamnetwork.tv" : "",
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
     })
         .cookie("evently_refresh_token", tokens.data.refresh_token, {
-            domain: ".livestreamnetwork.tv",
+            domain:
+                process.env.NODE_ENV == "production"
+                    ? ".livestreamnetwork.tv"
+                    : "",
             secure: true,
-            sameSite: "strict",
+            sameSite: "none",
         })
         .redirect(
             process.env.NODE_ENV == "production"
