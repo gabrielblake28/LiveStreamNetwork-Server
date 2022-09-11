@@ -63,11 +63,11 @@ export interface IEventService {
      * @param page where in the dataset to start
      * @param UserIds list of user ids
      */
-    GetEventsWithMatchingUserIds(
+    GetEventsByUserId(
         limit: number,
         page: number,
         user_id: string,
-        date: Date
+        date?: Date
     ): Promise<ResponsePayload<IEvent[]>>;
 
     /**
@@ -128,6 +128,7 @@ export interface IEventService {
      * @param user_id
      */
     GetSubscribedEvents(
-        user_id: string
+        user_id: string,
+        start_timestamp?: Date
     ): Promise<ResponsePayload<Partial<IEvent>[]>>;
 }

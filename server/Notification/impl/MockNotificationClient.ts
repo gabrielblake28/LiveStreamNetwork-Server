@@ -9,10 +9,18 @@ export class MockNotificationClient implements INotificationClient {
     }
 
     SendVerification(to: string, channel: NotificationKind): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve) => {
+            resolve(true);
+        });
     }
 
     Verify(to: string, code: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        return new Promise((resolve) => {
+            if (code == "123456") {
+                resolve(true);
+            } else {
+                resolve(false);
+            }
+        });
     }
 }

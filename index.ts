@@ -27,7 +27,6 @@ import { EventService } from "./server/Event/impl/EventService";
 import { NotificationFactory } from "./server/Notification/impl/NotificationFactory";
 import { AuthRouter } from "./server/Routers/AuthRouter";
 import { FeedbackRouter } from "./server/Routers/FeedbackRouter";
-import { rateLimiterUsingThirdParty } from "./server/MiddleWare/RateLimiter";
 
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
@@ -72,7 +71,6 @@ const PORT = process.env.PORT || 3500;
 //     batchTextNotificationStrategy.send();
 // }, 300000);
 
-app.use(rateLimiterUsingThirdParty);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cookieSession({ secret: "secretToken" }));
@@ -106,11 +104,11 @@ app.get("/auth/twitch/callback", async (req, res) => {
         );
 });
 
-const getTokens = async (accessToken: string) => {
+const getTokens = async (authorizationToken: string) => {
     return await axios.post("https://id.twitch.tv/oauth2/token", {
         Client_ID: process.env.TWITCH_CLIENT_ID,
         Client_Secret: process.env.TWITCH_SECRET,
-        code: accessToken,
+        code: authorizationToken,
         grant_type: "authorization_code",
         redirect_uri:
             process.env.NODE_ENV == "production"
@@ -136,11 +134,9 @@ const testService = new TestService();
 //         testService.DeleteSubscriptions().then(() => {
 //             testService.CreateUsers(10000).then(() => {
 //                 testService
-//                     .CreateEvents(10000, new Date("2022-07-20"), true)
+//                     .CreateEvents(10000, new Date("2022-09-13"), true)
 //                     .then(() => {
-//                         testService.AddSubscriptions(500, 300).then(() => {
-//                             console.timeEnd("CreateEvents");
-//                         });
+//                         console.timeEnd("CreateEvents");
 //                     });
 //             });
 //         });

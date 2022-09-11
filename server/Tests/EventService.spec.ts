@@ -121,11 +121,7 @@ describe("Event Service", () => {
         it("Test return result for fetching user events", async () => {
             stubQuery.returns({ rows: expectedResult });
 
-            const result = await eventService.GetEventsWithMatchingUserIds(
-                1,
-                1,
-                ""
-            );
+            const result = await eventService.GetEventsByUserId(1, 1, "");
 
             expect(result.status).to.equal(200);
             expect(result.result).to.equal("success");
@@ -138,7 +134,7 @@ describe("Event Service", () => {
         it("Test return result when fetching user events fails", async () => {
             stubQuery.throws(error);
 
-            const result = await eventService.GetEventsWithMatchingUserIds(
+            const result = await eventService.GetEventsByUserId(
                 1,
                 1,
                 "",

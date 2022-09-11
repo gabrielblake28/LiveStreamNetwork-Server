@@ -7,8 +7,19 @@ import {
 import { query } from "../../common/PostgresQuery";
 import { IEvent } from "../def/IEvent";
 import { IEventService } from "../def/IEventService";
+import awsSDK from "aws-sdk";
+import { v4 as uuidv4 } from "uuid";
 
 export class EventService implements IEventService {
+    private readonly s3: awsSDK.S3;
+    constructor() {
+        awsSDK.config.update({
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+        });
+
+        this.s3 = new awsSDK.S3();
+    }
     async GetEventsAtStartTime(
         limit: number,
         page: number,
@@ -32,7 +43,7 @@ export class EventService implements IEventService {
         date: Date = new Date()
     ): Promise<ResponsePayload<IEvent[]>> {
         try {
-            const sql = `SELECT *, CASE WHEN EXISTS (SELECT user_id FROM "Subscriptions" WHERE user_id = $1 AND event_id = e.event_id) THEN true else false END as is_subscribed FROM "EventView" e WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
+            const sql = `SELECT e.*, u.subscription_id FROM "EventView" e LEFT OUTER JOIN (SELECT subscription_id, event_id FROM "Subscriptions" WHERE user_id = $1) u ON e.event_id = u.event_id WHERE start_timestamp <= $2 and end_timestamp >= $2 LIMIT $3 OFFSET $4`;
 
             const { rows } = await query(sql, [
                 user_id,
@@ -110,15 +121,14 @@ export class EventService implements IEventService {
         }
     }
 
-    async GetEventsWithMatchingUserIds(
+    async GetEventsByUserId(
         limit: number,
         page: number,
         user_id: string,
         date: Date = new Date()
     ): Promise<ResponsePayload<IEvent[]>> {
         try {
-            const sql = `SELECT * FROM "Events" WHERE user_id = $1 and start_timestamp >= $2
-            )}) LIMIT $3 OFFSET $4`;
+            const sql = `SELECT * FROM "EventView" WHERE user_id = $1 and start_timestamp >= $2 LIMIT $3 OFFSET $4`;
 
             const { rows } = await query(sql, [
                 user_id,
@@ -157,7 +167,7 @@ export class EventService implements IEventService {
 
     async CreateEvent(resource: IEvent): Promise<ResponsePayload<string>> {
         try {
-            const sql = `INSERT INTO "Events" (title, description, image, featured, user_id, start_timestamp, end_timestamp) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING event_id`;
+            const sql = `INSERT INTO "Events" (title, description, image, featured, user_id, start_timestamp, end_timestamp, created_for_test, aws_image_key) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING event_id`;
 
             const { rows } = await query(sql, [
                 resource.title,
@@ -167,6 +177,8 @@ export class EventService implements IEventService {
                 resource.user_id,
                 resource.start_timestamp,
                 resource.end_timestamp,
+                process.env.NODE_ENV == "test" ? true : false,
+                resource.aws_image_key,
             ]);
 
             return sendSuccess(201, rows[0].event_id);
@@ -193,8 +205,23 @@ export class EventService implements IEventService {
     async DeleteEvent(id: string): Promise<ResponsePayload<string>> {
         try {
             const sql = `DELETE FROM "Events" WHERE event_id = $1`;
+            const event = await this.GetEvent(id, "0");
+
+            if (event.result == "error") {
+                return sendFailure(404, "event does not exist with id: " + id);
+            } else {
+                if (event.data.aws_image_key) {
+                    await this.s3
+                        .deleteObject({
+                            Bucket: "" + process.env.S3_BUCKET_NAME,
+                            Key: event.data.aws_image_key,
+                        })
+                        .promise();
+                }
+            }
 
             await query(sql, [id]);
+
             return sendSuccess(204, `Event ${id} successfully deleted`);
         } catch (e) {
             return sendFailure(500, (e as Error).message);
@@ -206,18 +233,45 @@ export class EventService implements IEventService {
         resource: IEvent
     ): Promise<ResponsePayload<IEvent>> {
         try {
-            const sql = `UPDATE "Events" SET title=$2, description=$3, image=$4, featured=$5, user_id=$6, start_timestamp=$7, end_timestamp=$8 WHERE event_id = $1 RETURNING *`;
+            const sql = `UPDATE "Events" SET title=$2, description=$3, image=$4, featured=$5, user_id=$6, start_timestamp=$7, end_timestamp=$8, aws_image_key=$9 WHERE event_id = $1 RETURNING *`;
+
+            if (!resource.event_id) {
+                return sendFailure(400, "Event Id cannot be undefined");
+            }
+
+            let aws_image_key: string;
+            if (!resource.aws_image_key) {
+                const event = await this.GetEvent(
+                    resource.event_id!,
+                    resource.user_id
+                );
+
+                if (event.result == "success") {
+                    aws_image_key = event.data.aws_image_key;
+                }
+            } else {
+                aws_image_key = resource.aws_image_key;
+            }
+
+            const response = await this.s3
+                .upload({
+                    Bucket: "" + process.env.S3_BUCKET_NAME,
+                    Key: (aws_image_key ??= uuidv4()),
+                    Body: resource.image_buffer,
+                    ContentType: "image/jpeg",
+                })
+                .promise();
 
             const { rows } = await query(sql, [
                 id,
                 resource.title,
                 resource.description,
-                resource.image,
+                response.Location,
                 resource.featured,
-
                 resource.user_id,
                 resource.start_timestamp,
                 resource.end_timestamp,
+                response.Key,
             ]);
 
             return sendSuccess(200, rows[0]);
@@ -227,14 +281,32 @@ export class EventService implements IEventService {
     }
 
     async GetSubscribedEvents(
-        user_id: string
+        user_id: string,
+        start_timestamp: Date = new Date()
     ): Promise<ResponsePayload<Partial<IEvent>[]>> {
         try {
-            const sql = `Select * from "SubscriptionsView" where user_id = $1`;
+            const sql = `Select * from "SubscriptionsView" where user_id = $1 and end_timestamp >= $2 order by start_timestamp DESC`;
 
-            const { rows } = await query(sql, [user_id]);
+            const { rows } = await query(sql, [user_id, start_timestamp]);
 
             return sendSuccess(200, rows);
+        } catch (e) {
+            return sendFailure(500, (e as Error).message);
+        }
+    }
+
+    async DeleteTestEvents(user_id: string): Promise<ResponsePayload<string>> {
+        try {
+            if (process.env.NODE_ENV != "test") {
+                return sendFailure(
+                    400,
+                    "This method is only available in a test environment"
+                );
+            }
+            const sql = `DELETE FROM "Events" WHERE user_id = $1 and created_for_test = true`;
+
+            await query(sql, [user_id]);
+            return sendSuccess(204, `Event ${user_id} successfully deleted`);
         } catch (e) {
             return sendFailure(500, (e as Error).message);
         }

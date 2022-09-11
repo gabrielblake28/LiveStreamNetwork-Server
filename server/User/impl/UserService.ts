@@ -2,6 +2,11 @@ import { query } from "../../common/PostgresQuery";
 import { IUser } from "../def/IUser";
 import { IUserService } from "../def/IUserService";
 import { ITwitchUserData } from "../def/ITwitchUserData";
+import {
+    ResponsePayload,
+    sendFailure,
+    sendSuccess,
+} from "../../common/message/MessageService";
 
 export class UserService implements IUserService {
     async CreateUser(resource: IUser): Promise<IUser> {
@@ -33,19 +38,31 @@ export class UserService implements IUserService {
         return rows[0];
     }
 
-    async UpdateUser(id: string, resource: IUser): Promise<IUser> {
-        const sql = `UPDATE "Users" SET username=$2, password=$3, email=$4, status=$5, twitch_info=$6`;
+    async UpdateUser(
+        id: string,
+        resource: IUser
+    ): Promise<ResponsePayload<IUser>> {
+        try {
+            const sql = `UPDATE "Users" SET twitch_id=$2, display_name=$3, description=$4, profile_image_url=$5, view_count=$6 email=$7 phone=$8 offline_image_url=$9 broadcaster_type=$10 type=$11`;
 
-        const { rows } = await query(sql, [
-            id,
-            resource.display_name,
-            resource.description,
-            resource.profile_image_url,
-            resource.email,
-            resource.phone,
-        ]);
+            const { rows } = await query(sql, [
+                id,
+                resource.twitch_id,
+                resource.display_name,
+                resource.description,
+                resource.profile_image_url,
+                resource.view_count,
+                resource.email,
+                resource.phone,
+                resource.offline_image_url,
+                resource.broadcaster_type,
+                resource.type,
+            ]);
 
-        return rows[0];
+            return sendSuccess(200, rows[0]);
+        } catch (e: any) {
+            return sendFailure(500, (e as Error).message);
+        }
     }
 
     async DeleteUser(id: string): Promise<void> {
