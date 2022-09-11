@@ -15,3 +15,11 @@ UserRouter.get("/:user_id", async (req: Request, res: Response) => {
         res.status(400).send("ERROR");
     }
 });
+
+UserRouter.post("/:user_id", async (req: Request, res: Response) => {
+    const result = await userService.UpdateUser(req.params.user_id, req.body);
+
+    res.status(result.status).send(
+        result.result == "success" ? result.data : result.message
+    );
+});

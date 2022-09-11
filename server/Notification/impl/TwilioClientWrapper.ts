@@ -19,15 +19,21 @@ export class TwilioClientWrapper implements INotificationClient {
         return await this.client.verify.v2
             .services("VA9f33644caadc5b23478ee4d2a79b386a")
             .verifications.create({ to, channel: channel })
-            .then(() => true)
-            .catch(() => false);
+            .then((response) => true)
+            .catch((error) => {
+                console.log(error);
+                return false;
+            });
     }
     async Verify(to: string, code: string): Promise<boolean> {
         return await this.client.verify.v2
             .services("VA9f33644caadc5b23478ee4d2a79b386a")
             .verificationChecks.create({ to, code })
             .then((response) => response.valid)
-            .catch(() => false);
+            .catch((error) => {
+                console.log(error);
+                return false;
+            });
     }
     async send(to: string[], body: string): Promise<boolean> {
         return await this.client.notify
