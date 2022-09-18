@@ -38,6 +38,15 @@ export class UserService implements IUserService {
         return rows[0];
     }
 
+    async GetUserByTwitchId(id: string): Promise<IUser> {
+        const sql = `SELECT * FROM "Users" WHERE twitch_id = $1`;
+
+        
+        const { rows } = await query(sql, [id]);
+
+        return rows[0];
+    }
+
     async UpdateUser(
         id: string,
         resource: IUser
