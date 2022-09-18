@@ -1,1 +1,1 @@
-export class AuthStrategyParameters {}
+export interface AuthStrategyParameters {}

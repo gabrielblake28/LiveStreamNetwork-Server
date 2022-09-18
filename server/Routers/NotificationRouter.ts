@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { INotificationClient } from "../Notification/def/INotificationClient";
 import { NotificationKind } from "../Notification/def/NotificationKind";
+import { MockNotificationClient } from "../Notification/impl/MockNotificationClient";
 import { TwilioClientWrapper } from "../Notification/impl/TwilioClientWrapper";
 
 let notificationClient: INotificationClient;
@@ -20,9 +21,11 @@ if (
     throw Error("NOTIFICATIONS ARE NOT WORKING");
 }
 
+notificationClient = new MockNotificationClient();
+
 export const NotificationRouter = Router();
 
-NotificationRouter.get("/verify", async (req, res) => {
+NotificationRouter.get("/", async (req, res) => {
     const result = await notificationClient.SendVerification(
         req.query.to as string,
         req.query.channel as NotificationKind
@@ -35,7 +38,7 @@ NotificationRouter.get("/verify", async (req, res) => {
     }
 });
 
-NotificationRouter.post("/verify", async (req, res) => {
+NotificationRouter.post("/", async (req, res) => {
     const result = await notificationClient.Verify(req.body.to, req.body.code);
 
     if (result) {

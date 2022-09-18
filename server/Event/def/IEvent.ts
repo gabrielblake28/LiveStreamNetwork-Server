@@ -13,4 +13,5 @@ export interface IEvent {
     subscription_id?: string;
     created_for_test: boolean;
     aws_image_key: string;
+    image_buffer?: Buffer;
 }

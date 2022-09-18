@@ -9,32 +9,26 @@ import { IUser } from "../../User/def/IUser";
 import axios, { AxiosError } from "axios";
 import { IUserService } from "../../User/def/IUserService";
 import { TwitchAuthParameters } from "./TwitchAuthParameters";
+import { TwitchAuthResponse } from "../def/TwitchAuthResponse";
 
 export class TwitchAuthStrategy implements IAuthStrategy {
-    private _access_token: string;
-    private _refresh_token?: string;
-    private userService: IUserService;
+    private readonly access_token: string;
+    private readonly refresh_token?: string;
+    private readonly userService: IUserService;
 
-    get AuthToken() {
-        return this._access_token;
-    }
-
-    get RefreshToken() {
-        return this._refresh_token;
-    }
     constructor({ access_token, refresh_token }: TwitchAuthParameters) {
-        this._access_token = access_token;
+        this.access_token = access_token;
 
         if (!access_token) {
             throw new Error("Access token cannot be invalid");
         }
-        this._refresh_token = refresh_token;
+        this.refresh_token = refresh_token;
         this.userService = new UserService();
     }
 
     async Authenticate(): Promise<ResponsePayload<IUser>> {
         const initialAuthAttempt = await this.TryAuthenticateAccessToken(
-            this.AuthToken
+            this.access_token
         );
 
         if (initialAuthAttempt.result == "success") {
@@ -44,7 +38,7 @@ export class TwitchAuthStrategy implements IAuthStrategy {
 
             return sendSuccess(200, result);
         } else {
-            if (!this.RefreshToken) {
+            if (!this.refresh_token) {
                 return sendFailure(400, "Access token is invalid");
             }
 
@@ -55,7 +49,11 @@ export class TwitchAuthStrategy implements IAuthStrategy {
                     finalAuthAttempt.data
                 );
 
-                return sendSuccess(200, result);
+                return sendSuccess(
+                    200,
+
+                    result
+                );
             } else {
                 return finalAuthAttempt;
             }
@@ -85,7 +83,7 @@ export class TwitchAuthStrategy implements IAuthStrategy {
         ResponsePayload<TwitchAuthResponse>
     > {
         try {
-            if (!this.RefreshToken) {
+            if (!this.refresh_token) {
                 throw new Error("Refresh token is invalid");
             }
 
@@ -95,7 +93,7 @@ export class TwitchAuthStrategy implements IAuthStrategy {
                     client_id: process.env.TWITCH_CLIENT_ID as string,
                     client_secret: process.env.TWITCH_SECRET as string,
                     grant_type: "refresh_token",
-                    refresh_token: this.RefreshToken,
+                    refresh_token: this.refresh_token,
                 }
             );
 
@@ -107,17 +105,3 @@ export class TwitchAuthStrategy implements IAuthStrategy {
         }
     }
 }
-
-type TwitchAuthResponse = {
-    id: string;
-    login: string;
-    display_name: string;
-    type: string;
-    broadcaster_type: string;
-    description: string;
-    profile_image_url: string;
-    offline_image_url: string;
-    view_count: number;
-    email: string;
-    created_at: string;
-};

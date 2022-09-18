@@ -1,3 +1,4 @@
+import { ResponsePayload } from "../../common/message/MessageService";
 import { ITwitchUserData } from "./ITwitchUserData";
 import { IUser } from "./IUser";
 
@@ -21,13 +22,19 @@ export interface IUserService {
      * @param id user id
      * @param resource user data
      */
-    UpdateUser(id: string, resource: IUser): Promise<IUser>;
+    UpdateUser(id: string, resource: IUser): Promise<ResponsePayload<IUser>>;
 
     /**
      * Get a user by a given id
      * @param id user id
      */
     GetUser(id: string): Promise<IUser>;
+
+    /**
+     * Get a user by a given id
+     * @param id twitch id
+     */
+    GetUserByTwitchId(id: string): Promise<IUser>;
 
     /**
      * Delete a user by a given id

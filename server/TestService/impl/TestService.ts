@@ -34,7 +34,7 @@ export class TestService {
                 description: "",
                 image: `https://picsum.photos/800/450?dummyParam=${i}`,
                 start_timestamp: date,
-                end_timestamp: date,
+                end_timestamp: this.SetHours(date, 3),
                 created_for_test: true,
                 featured: true,
                 user_id: assignUsers
@@ -170,5 +170,18 @@ export class TestService {
             0
         );
         return date;
+    }
+
+    private SetHours(date: Date, offset: number): Date {
+        const newDate = new Date(date);
+
+        newDate.setHours(
+            newDate.getHours() + offset,
+            newDate.getMinutes(),
+            newDate.getSeconds(),
+            newDate.getMilliseconds()
+        );
+
+        return newDate;
     }
 }
