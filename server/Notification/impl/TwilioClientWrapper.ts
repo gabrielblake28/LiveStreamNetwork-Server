@@ -17,7 +17,7 @@ export class TwilioClientWrapper implements INotificationClient {
         channel: NotificationKind
     ): Promise<boolean> {
         return await this.client.verify.v2
-            .services("VA9f33644caadc5b23478ee4d2a79b386a")
+            .services(process.env.TWILLIO_VERIFICATION_SID as string)
             .verifications.create({ to, channel: channel })
             .then((response) => true)
             .catch((error) => {
@@ -27,7 +27,7 @@ export class TwilioClientWrapper implements INotificationClient {
     }
     async Verify(to: string, code: string): Promise<boolean> {
         return await this.client.verify.v2
-            .services("VA9f33644caadc5b23478ee4d2a79b386a")
+            .services(process.env.TWILLIO_VERIFICATION_SID as string)
             .verificationChecks.create({ to, code })
             .then((response) => response.valid)
             .catch((error) => {
