@@ -31,6 +31,12 @@ export interface IUserService {
     GetUser(id: string): Promise<IUser>;
 
     /**
+     * Get a user by a given id
+     * @param id twitch id
+     */
+    GetUserByTwitchId(id: string): Promise<IUser>;
+
+    /**
      * Delete a user by a given id
      * @param id user id
      * @param resource user data
